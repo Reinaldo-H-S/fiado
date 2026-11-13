@@ -1,5 +1,7 @@
-// Fiado — offline cache. Bump VERSION when the app files change.
-const VERSION = 'fiado-v1';
+// Fiado — offline cache.
+// To ship an update: change the app files, bump VERSION, push. Open apps then show "Atualizar app".
+// Your data lives in localStorage and is never touched by updates.
+const VERSION = 'fiado-v2';
 const SHELL = [
   './',
   './index.html',
@@ -10,7 +12,14 @@ const SHELL = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // Fetch fresh copies (skip the HTTP cache) and wait: the page decides when to switch.
+  e.waitUntil(caches.open(VERSION).then(c =>
+    Promise.all(SHELL.map(u => fetch(u, { cache: 'reload' }).then(r => { if (!r.ok) throw new Error(u); return c.put(u, r); })))
+  ));
+});
+
+self.addEventListener('message', e => {
+  if (e.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
@@ -26,23 +35,23 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // The page itself: try the network first so updates arrive, fall back to the saved copy offline.
+  // The page: always the version this worker shipped, so it only changes after "Atualizar app".
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req)
-        .then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return res; })
-        .catch(() => caches.match('./index.html'))
+      caches.open(VERSION).then(c => c.match('./index.html')).then(hit => hit || fetch(req))
     );
     return;
   }
 
-  // Fonts and the app's own files: serve the saved copy, refresh it in the background.
-  const cacheable = url.origin === location.origin ||
-    url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
-  if (!cacheable) return;
+  const sameOrigin = url.origin === location.origin;
+  const font = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
+  if (!sameOrigin && !font) return;
+  if (sameOrigin && url.pathname.endsWith('/sw.js')) return;
+
   e.respondWith(
     caches.open(VERSION).then(cache =>
-      cache.match(req).then(hit => {
+      cache.match(req, { ignoreSearch: sameOrigin }).then(hit => {
+        if (hit && sameOrigin) return hit;
         const net = fetch(req).then(res => { if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone()); return res; }).catch(() => hit);
         return hit || net;
       })
