@@ -619,6 +619,18 @@ body{-webkit-font-smoothing:auto;letter-spacing:normal}
 .brand-mark.img img{width:100%;height:100%;display:block}
 @media (min-width:1024px){ .hero .big{font-size:clamp(48px,4.2vw,64px)} }
 
+/* ---------- v13: refresh button + pull to refresh ---------- */
+.top-acts{display:flex;align-items:center;gap:8px}
+.girando svg,#ptr.spin svg{animation:giro .8s linear infinite}
+@keyframes giro{to{transform:rotate(360deg)}}
+@media (max-width:420px){#btn-sync{width:40px;padding:0;justify-content:center}#btn-sync .t{display:none}}
+#ptr{position:fixed;z-index:60;left:50%;top:calc(env(safe-area-inset-top,0px) + 6px);width:42px;height:42px;margin-left:-21px;border-radius:50%;
+  display:grid;place-items:center;background:var(--surface);color:var(--ink);box-shadow:0 10px 26px -8px rgba(20,10,40,.45),0 0 0 1px var(--hair);
+  opacity:0;transform:translateY(-60px);pointer-events:none;transition:background .2s,color .2s}
+#ptr.solto{transition:transform .3s var(--ease),opacity .3s,background .2s}
+#ptr.pronto,#ptr.spin{background:var(--lime);color:var(--lime-ink)}
+#ptr svg{width:20px;height:20px}
+
 /* columns: invisible on phones, two columns on wide screens */
 .cols,.side,.main{display:contents}
 .nav-brand,.nav-foot{display:none}
@@ -992,8 +1004,10 @@ let ui = { sheet:null, update:false, tab:lsGet('fiado-tab','lista'), lado:lsGet(
 function trocarLado(l){ if(ui.lado===l) return; ui.lado = l; ui.anim = true; try{ localStorage.setItem('fiado-lado', l); }catch(e){} window.scrollTo(0,0); render(); }
 function headerHTML(){ return `<header class="top">
     <div class="brand">${brandMark()}<span>${esc(txt('app'))}</span></div>
-    <button class="icon-btn" id="btn-cfg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Ajustes${syncDot()}</button>
+    <div class="top-acts"><button class="icon-btn${atualizarTudo.on?' girando':''}" id="btn-sync" aria-label="Atualizar">${ICO_REFRESH}<span class="t">Atualizar</span></button>
+    <button class="icon-btn" id="btn-cfg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Ajustes${syncDot()}</button></div>
   </header>`; }
+const ICO_REFRESH = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>`;
 const updHTML = () => ui.update ? `<div class="upd"><span>Tem versão nova do app. Seus dados continuam aqui.</span><button id="btn-upd">Atualizar app</button></div>` : '';
 function ensureFab(){ let fab = $('#fab'); if(!fab){ fab = document.createElement('button'); fab.id='fab'; fab.className='fab'; document.body.appendChild(fab); } return fab; }
 function themeColor(){ const tc = document.querySelector('meta[name="theme-color"]'); if(tc) tc.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#F2F0FA'; }
@@ -1078,7 +1092,7 @@ function render(){
   app.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ ui.tab = b.dataset.tab; try{ localStorage.setItem('fiado-tab', ui.tab); }catch(e){} render(); });
   const bu = $('#btn-upd'); if(bu) bu.onclick = aplicarUpdate;
   wireChart();
-  $('#btn-cfg').onclick = ()=>openSheet({type:'cfg'});
+  $('#btn-cfg').onclick = ()=>openSheet({type:'cfg'}); $('#btn-sync').onclick = atualizarTudo;
   const ce = $('#btn-clear-ex'); if(ce) ce.onclick = clearExamples;
   const bx = $('#btn-ex'); if(bx) bx.onclick = carregarExemplos;
   const bb = $('#btn-bk'); if(bb) bb.onclick = exportar;
@@ -1581,7 +1595,7 @@ function renderOutra(){
   fab.innerHTML = '<span class="plus">+</span>'+esc(f.t); fab.onclick = f.go;
   fab.classList.remove('pay'); fab.hidden = S.readOnly || !!ui.sheet;
   document.documentElement.classList.toggle('locked', !!ui.sheet);
-  $('#btn-cfg').onclick = ()=>openSheet({type:'cfg'});
+  $('#btn-cfg').onclick = ()=>openSheet({type:'cfg'}); $('#btn-sync').onclick = atualizarTudo;
   const bu = $('#btn-upd'); if(bu) bu.onclick = aplicarUpdate;
   if(mod.wire) mod.wire();
   renderNav(); themeColor();
@@ -2583,7 +2597,7 @@ SHEETS.sync = {
   }
 };
 
-const APP_VERSION = '12';
+const APP_VERSION = '13';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
@@ -2612,6 +2626,60 @@ if('serviceWorker' in navigator && (location.protocol==='https:' || location.hos
   });
 }
 if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+
+/* ---------- v13: refresh (button and pull down) ---------- */
+async function atualizarTudo(){
+  if(atualizarTudo.on) return; atualizarTudo.on = true;
+  document.querySelectorAll('#btn-sync').forEach(b=>b.classList.add('girando'));
+  const t0 = Date.now();
+  try{
+    try{ swReg && swReg.update().catch(()=>{}); }catch(e){}
+    if(syncOn()){
+      for(let i=0; syncBusy && i<150; i++) await new Promise(r=>setTimeout(r,100));
+      await sincronizar(true);
+    }else{ render(); toast('Atualizado. Pra puxar do outro aparelho, ligue a sincronização em Ajustes.'); }
+  }finally{
+    const falta = 700-(Date.now()-t0); if(falta>0) await new Promise(r=>setTimeout(r,falta));
+    atualizarTudo.on = false; document.querySelectorAll('#btn-sync').forEach(b=>b.classList.remove('girando'));
+  }
+}
+(function puxarPraAtualizar(){
+  const el = document.createElement('div'); el.id = 'ptr'; el.setAttribute('aria-hidden','true'); el.innerHTML = ICO_REFRESH; document.body.appendChild(el);
+  const LIMITE = 70, MAX = 120;
+  let y0 = null, x0 = 0, ativo = false, dist = 0;
+  const pos = (d, op) => { el.style.transform = `translateY(${d-50}px)`; el.style.opacity = op; };
+  const soltar = () => { el.classList.add('solto'); el.classList.remove('pronto','spin'); pos(0, 0); el.querySelector('svg').style.transform = ''; };
+  addEventListener('touchstart', e => {
+    y0 = null;
+    if(ui.sheet || atualizarTudo.on || e.touches.length>1 || window.scrollY>0) return;
+    if(e.target.closest && e.target.closest('input,textarea,select,.nav')) return;
+    y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; ativo = false; dist = 0;
+  }, {passive:true});
+  addEventListener('touchmove', e => {
+    if(y0==null) return;
+    const dy = e.touches[0].clientY - y0, dx = e.touches[0].clientX - x0;
+    if(!ativo){
+      if(dy>8 && dy>Math.abs(dx)*1.5 && window.scrollY<=0){ ativo = true; el.classList.remove('solto'); }
+      else if(dy<0 || Math.abs(dx)>14){ y0 = null; return; }
+      else return;
+    }
+    dist = Math.min(MAX, Math.max(0, dy)*.55);
+    pos(dist, Math.min(1, dist/40));
+    el.classList.toggle('pronto', dist>=LIMITE);
+    el.querySelector('svg').style.transform = `rotate(${dist*3}deg)`;
+    if(e.cancelable) e.preventDefault();
+  }, {passive:false});
+  const fim = () => {
+    if(y0==null) return; y0 = null;
+    if(!ativo) return; ativo = false;
+    if(dist>=LIMITE){
+      el.classList.add('solto','spin'); el.classList.remove('pronto'); el.querySelector('svg').style.transform = ''; pos(LIMITE, 1);
+      try{ navigator.vibrate?.(10); }catch(_){}
+      atualizarTudo().finally(soltar);
+    }else soltar();
+  };
+  addEventListener('touchend', fim); addEventListener('touchcancel', fim);
+})();
 
 boot();
 </script>
