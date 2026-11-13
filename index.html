@@ -733,7 +733,7 @@ function pessoaHTML(s){
       <button type="button" class="av-btn" id="p-foto" aria-label="${okFoto(p.foto)?'Trocar a foto de ':'Colocar foto em '}${esc(p.nome)}">${avatar(p)}<span class="cam" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></button>
       <input type="file" id="p-foto-in" accept="image/*" hidden>
       <div><div class="nm">${esc(p.nome)}</div><div class="tiny">${p.telefone?esc(p.telefone):'sem WhatsApp salvo'}${okFoto(p.foto) ? ` · <button type="button" class="link-btn" id="p-foto-rm" style="font-size:12.5px;font-weight:500;color:var(--muted)">tirar foto</button>` : ''}</div></div></div><button class="x" data-close aria-label="Fechar">×</button></div>
-  ${okFoto(p.foto) ? '' : `<button type="button" class="hint foto-dica" id="p-foto-dica">📷 Toque na bolinha pra colocar a foto de ${esc(p.nome.trim().split(/\s+/)[0])}. Dica: no WhatsApp, abra a foto de perfil, toque em Compartilhar e em Salvar imagem.</button>`}
+  ${okFoto(p.foto) ? '' : `<button type="button" class="hint foto-dica" id="p-foto-dica">📷 Toque na bolinha pra colocar uma foto de ${esc(p.nome.trim().split(/\s+/)[0])}: qualquer foto da galeria (uma que ela te mandou, um print do Instagram) ou tire uma na hora.</button>`}
   <div class="owe${pg?' pay':''}">
     <div><div class="lbl">${sm.saldo>0?(pg?'você deve':'te deve'):'situação'}</div><div class="v num">${sm.saldo>0?brl(sm.saldo):'Quitado'}</div>
       <div style="margin-top:6px"><span class="pill ${sm.status.cls}">${sm.status.txt}</span>${sm.prazo&&sm.saldo>0?` <span class="tiny">${pg?'você prometeu':'prometeu'} ${fmtDate(sm.prazo)}</span>`:''}</div></div>
@@ -1865,7 +1865,7 @@ function wireChart(){
 }
 
 /* ---------- offline + atualização ---------- */
-const APP_VERSION = '6';
+const APP_VERSION = '7';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
