@@ -58,7 +58,7 @@ html:root[data-mode="dark"]{
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);background-image:radial-gradient(60rem 30rem at 85% -10%,var(--bg-glow),transparent 60%);background-attachment:fixed;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;min-height:100%}
-.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 120px;display:flex;flex-direction:column;gap:22px}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 200px;display:flex;flex-direction:column;gap:22px}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
@@ -116,7 +116,7 @@ details.paid[open] summary{margin-bottom:10px}
 .note{font-size:12.5px;color:var(--muted);text-align:center}
 
 /* FAB */
-.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--btn);color:var(--btn-ink);white-space:nowrap;border:0;border-radius:999px;padding:15px 24px;font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(20,10,40,.25);z-index:20}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--btn);color:var(--btn-ink);white-space:nowrap;border:0;border-radius:999px;padding:15px 24px;font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(20,10,40,.25);z-index:20}
 .fab .plus{width:22px;height:22px;border-radius:50%;background:var(--lime);color:var(--lime-ink);display:grid;place-items:center;font-weight:800}
 
 /* sheet */
@@ -135,6 +135,51 @@ html.locked,html.locked body{overflow:hidden}
 
 /* list surfaces get a hairline edge in dark mode */
 .list,.owe,.tl,.cfg-sec,.box{border:1px solid var(--edge)}
+
+/* bottom navigation */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 90%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+.nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;color:var(--muted);font-size:11px;font-weight:600;min-width:0}
+.nav .ic{display:grid;place-items:center;width:48px;height:30px;border-radius:999px;transition:background .15s}
+.nav button[aria-current="page"]{color:var(--ink)}
+.nav button[aria-current="page"] .ic{background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* module screens */
+.stack{display:flex;flex-direction:column;gap:12px}
+.hero.mod{background:var(--modc);color:#1A1424;cursor:default}
+.hero.mod:active{transform:none}
+.mod-ic{position:absolute;right:-8px;bottom:-14px;opacity:.22;pointer-events:none}
+.neg{color:var(--late)} .pos{color:var(--ok)}
+.av.sq{border-radius:13px}
+.ov .ov-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 14px;border-top:1px solid var(--line)}
+.ov .ov-row:first-child{border-top:0}
+.ov .ov-row span{color:var(--muted)}
+.ov .ov-row.tot span{color:var(--ink);font-weight:600}
+.ov .ov-row.tot b{font-family:var(--f-display);font-weight:800;font-size:19px}
+.hint{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:13.5px;color:var(--ink)}
+.money.sm span{font-size:17px}.money.sm input{font-size:22px;padding:4px 6px}
+.btn.shp{background:#FFAA70;color:#2A1408}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:22px;line-height:1;color:var(--ink)}
+.stepper output{min-width:2.4ch;text-align:center;font-weight:800;font-family:var(--f-display);font-size:22px}
+.btn.danger.armed{background:var(--late);color:#fff}
+
+/* credit cards */
+.cards{display:flex;flex-direction:column;gap:12px}
+.cc{border:0;width:100%;text-align:left;border-radius:20px;padding:16px 18px;color:#fff;background:linear-gradient(135deg,var(--cc),color-mix(in srgb,var(--cc),#000 38%));display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);font:inherit}
+.cc-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:17px}
+.cc-pill{font-family:var(--f-body);font-size:11.5px;font-weight:700;background:rgba(255,255,255,.2);border-radius:999px;padding:3px 9px}
+.cc-sub{font-size:12.5px;opacity:.85}
+.cc-fat{font-family:var(--f-display);font-weight:800;font-size:30px;letter-spacing:-.02em;line-height:1.1}
+.cc-warn{font-size:12.5px;font-weight:600;background:rgba(0,0,0,.22);border-radius:10px;padding:6px 10px}
+.cc-bar{height:6px;border-radius:6px;background:rgba(255,255,255,.25);overflow:hidden}
+.cc-bar i{display:block;height:100%;background:#fff;border-radius:6px}
+.cc-meta{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;opacity:.9}
+
+/* several people in one entry */
+.tokens{display:flex;flex-wrap:wrap;gap:6px}
+.tokens:empty{display:none}
+.tok{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:6px 6px 6px 12px;font-weight:600;font-size:14px}
+.tok b{width:20px;height:20px;border-radius:50%;background:color-mix(in srgb,var(--bg) 22%,transparent);display:grid;place-items:center;font-size:14px;line-height:1}
 
 /* "Me devem" / "Eu devo" switch */
 .lado{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:5px}
@@ -310,7 +355,13 @@ const WD = ['dom','seg','ter','qua','qui','sex','sáb'];
 const fmtDate = s => { const d = parse(s); return WD[d.getDay()]+', '+pad(d.getDate())+'/'+pad(d.getMonth()+1); };
 const fmtShort = s => { const d = parse(s); return pad(d.getDate())+'/'+pad(d.getMonth()+1); };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-const toCents = v => { v = String(v).trim().replace(/\s|R\$/g,''); if(!v) return 0; if(v.includes(',')) v = v.replace(/\./g,'').replace(',','.'); const n = Number(v); return isFinite(n) ? Math.round(n*100) : NaN; };
+// "1.250,40" / "1250,4" / "5.000" (dot = thousands) / "12.50" (dot = decimal) -> cents
+const toCents = v => {
+  v = String(v).trim().replace(/\s|R\$/g,''); if(!v) return 0;
+  if(v.includes(',')) v = v.replace(/\./g,'').replace(',','.');
+  else if(/^-?\d{1,3}(\.\d{3})+$/.test(v)) v = v.replace(/\./g,'');
+  const n = Number(v); return isFinite(n) ? Math.round(n*100) : NaN;
+};
 function fridaysSince(start){ // Fridays after `start` up to today
   let n = 0, d = parse(start), end = parse(today()); d.setDate(d.getDate()+1);
   for(let i=0; d<=end && i<4000; i++){ if(d.getDay()===5) n++; d.setDate(d.getDate()+1); }
@@ -322,11 +373,14 @@ const initial = name => (String(name).trim()[0] || '?').toUpperCase();
 const avatar = p => `<div class="av" style="background:${avColor(p.nome)}" aria-hidden="true">${esc(initial(p.nome))}</div>`;
 
 /* ---------- store ---------- */
-const S = { pessoas:{}, lanc:{}, config:{}, mode:'loading', slow:false, readOnly:false };
+// every collection the app keeps (all in one localStorage document)
+const KINDS = ['pessoas','lanc','contas','cartoes','compras','faturasPagas','shopee','perfumes','vendas'];
+const S = { config:{}, mode:'loading', slow:false, readOnly:false };
+KINDS.forEach(k=>S[k]={});
 let db = null;
 const LS = 'fiado-v1';
-function loadLocal(){ try{ const j = JSON.parse(localStorage.getItem(LS)||'{}'); S.pessoas=j.pessoas||{}; S.lanc=j.lanc||{}; S.config=j.config||{}; }catch(e){} }
-function saveLocal(){ try{ localStorage.setItem(LS, JSON.stringify({pessoas:S.pessoas,lanc:S.lanc,config:S.config})); }catch(e){} }
+function loadLocal(){ try{ const j = JSON.parse(localStorage.getItem(LS)||'{}'); KINDS.forEach(k=>S[k]=j[k]||{}); S.config=j.config||{}; }catch(e){} }
+function saveLocal(){ try{ const o = {config:S.config}; KINDS.forEach(k=>o[k]=S[k]); localStorage.setItem(LS, JSON.stringify(o)); }catch(e){ toast('Não deu pra salvar no aparelho.', true); } }
 const COLL = { pessoas:'pessoas', lanc:'lancamentos' };
 
 async function put(kind, id, data){
@@ -456,9 +510,17 @@ function brandMark(){ const ic = (cfgNow().icone||'').trim(); return `<span clas
 
 /* ---------- render ---------- */
 const lsGet = (k, d) => { try{ return localStorage.getItem(k) || d; }catch(e){ return d; } };
-let ui = { sheet:null, update:false, tab:lsGet('fiado-tab','lista'), lado:lsGet('fiado-lado','receber') };
+let ui = { sheet:null, update:false, tab:lsGet('fiado-tab','lista'), lado:lsGet('fiado-lado','receber'), aba:lsGet('fiado-aba','fiado') };
 function trocarLado(l){ if(ui.lado===l) return; ui.lado = l; try{ localStorage.setItem('fiado-lado', l); }catch(e){} window.scrollTo(0,0); render(); }
+function headerHTML(){ return `<header class="top">
+    <div class="brand">${brandMark()}<span>${esc(txt('app'))}</span></div>
+    <button class="icon-btn" id="btn-cfg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Ajustes</button>
+  </header>`; }
+const updHTML = () => ui.update ? `<div class="upd"><span>Tem versão nova do app. Seus dados continuam aqui.</span><button id="btn-upd">Atualizar app</button></div>` : '';
+function ensureFab(){ let fab = $('#fab'); if(!fab){ fab = document.createElement('button'); fab.id='fab'; fab.className='fab'; document.body.appendChild(fab); } return fab; }
+function themeColor(){ const tc = document.querySelector('meta[name="theme-color"]'); if(tc) tc.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#F2F0FA'; }
 function render(){
+  if(ui.aba!=='fiado' && MODS[ui.aba]){ renderOutra(); return; }
   const app = $('#app');
   const ppl = Object.entries(S.pessoas).map(([id,p])=>({id,...p, s:summary(id)}));
   const devendo = ppl.filter(p=>p.s.saldo>0).sort((a,b)=> b.s.late-a.s.late || b.s.saldo-a.s.saldo);
@@ -473,12 +535,9 @@ function render(){
 
   applyLook(cfgNow());
   app.innerHTML = `
-  <header class="top">
-    <div class="brand">${brandMark()}<span>${esc(txt('app'))}</span></div>
-    <button class="icon-btn" id="btn-cfg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
-  </header>
+  ${headerHTML()}
 
-  ${ui.update ? `<div class="upd"><span>Tem versão nova do app. Seus fiados continuam aqui.</span><button id="btn-upd">Atualizar app</button></div>` : ''}
+  ${updHTML()}
 
   <div class="lado" role="tablist" aria-label="Lado">
     <button role="tab" data-lado="receber" aria-selected="${!pg}"><span>Me devem</span><small class="num">${brl(pg ? outro : total)}</small></button>
@@ -519,8 +578,8 @@ function render(){
   <p class="note">Seus dados ficam só neste aparelho e funcionam sem internet.<br>Faça backup em Ajustes de vez em quando.</p>
   `;
   // FAB
-  let fab = $('#fab');
-  if(!fab){ fab = document.createElement('button'); fab.id='fab'; fab.className='fab'; fab.onclick=()=>openSheet({type:'novo'}); document.body.appendChild(fab); }
+  const fab = ensureFab(); fab.onclick = ()=>openSheet({type:'novo'});
+  renderNav();
   fab.innerHTML = '<span class="plus">+</span>'+esc(T('botao'));
   fab.classList.toggle('pay', pg);
   app.querySelectorAll('[data-lado]').forEach(b=>b.onclick=()=>trocarLado(b.dataset.lado));
@@ -571,6 +630,8 @@ function renderSheet(){
   else if(s.type==='cfg') html = cfgHTML();
   else if(s.type==='importar') html = importarHTML(s);
   else if(s.type==='resumo') html = resumoHTML();
+  else if(SHEETS[s.type]) html = SHEETS[s.type].html(s);
+  if(!html){ ui.sheet=null; layer.innerHTML=''; layer.dataset.key=''; render(); return; }
   layer.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">${'<div class="grab"></div>'+html}</div></div>`;
   layer.dataset.key = sheetKey(s);
   $('#scrim').onclick = e=>{ if(e.target.id==='scrim') closeSheet(); };
@@ -578,7 +639,9 @@ function renderSheet(){
   wire(s);
   if(focusId && document.getElementById(focusId)) document.getElementById(focusId).focus();
 }
-const sheetKey = s => s.type+':'+(s.pid||'');
+const sheetKey = s => s.type+':'+(s.pid||s.id||'');
+// redraw the open sheet after its data changed (sheets keep form state otherwise)
+function rerenderSheet(){ $('#layer').dataset.key=''; render(); }
 
 function head(title){ return `<div class="sheet-h"><h3>${title}</h3><button class="x" data-close aria-label="Fechar">×</button></div>`; }
 
@@ -591,14 +654,16 @@ function pessoasOrdenadas(){
     return {id, ...p, saldo:sm.saldo, ult};
   }).sort((a,b)=> (b.saldo>0)-(a.saldo>0) || b.ult.localeCompare(a.ult) || a.nome.localeCompare(b.nome));
 }
-function pchipsHTML(q){
-  const nq = norm(q);
+// q = what's typed; sel = names already picked (shown pressed)
+function pchipsHTML(q, sel=[]){
+  const nq = norm(q), ns = sel.map(norm);
   const todas = pessoasOrdenadas();
   const lista = nq ? todas.filter(p=>norm(p.nome).includes(nq)) : todas;
-  const exato = todas.some(p=>norm(p.nome)===nq);
-  let html = lista.slice(0,20).map(p=>`<button type="button" class="pchip" data-nome="${esc(p.nome)}" aria-pressed="${norm(p.nome)===nq}">
+  const exato = todas.some(p=>norm(p.nome)===nq) || ns.includes(nq);
+  let html = '';
+  if(nq && !exato) html += `<button type="button" class="pchip novo" data-novo="${esc(q.trim())}"><span class="plus-av">+</span><span class="t"><span class="n">${esc(q.trim())}</span><small>pessoa nova</small></span></button>`;
+  html += lista.slice(0,24).map(p=>`<button type="button" class="pchip" data-nome="${esc(p.nome)}" aria-pressed="${ns.includes(norm(p.nome))}">
       ${avatar(p)}<span class="t"><span class="n">${esc(p.nome)}</span><small>${p.saldo>0?(PAGAR()?'você deve ':'deve ')+brl(p.saldo):'em dia'}</small></span></button>`).join('');
-  if(nq && !exato) html += `<span class="pchip novo" aria-live="polite"><span class="plus-av">+</span><span class="t"><span class="n">${esc(q.trim())}</span><small>pessoa nova</small></span></span>`;
   return html;
 }
 function novoHTML(s){
@@ -609,8 +674,14 @@ function novoHTML(s){
   ${pg ? '<p class="tiny" style="margin:0">Algo que <b>você</b> precisa pagar pra alguém.</p>' : ''}
   <form id="f-novo" class="field" style="gap:14px" novalidate>
     <div class="field"><label for="n-nome">${pg ? 'Pra quem você deve' : 'Quem ficou devendo'}</label>
-      <input class="inp" id="n-nome" autocomplete="off" autocapitalize="words" placeholder="${temGente?'Escolha abaixo ou escreva um nome':'Ex.: Rafa'}" value="${esc(pre)}" ${s.pid?'readonly':''}>
+      ${s.pid ? '' : `<div class="tokens" id="n-tokens" aria-live="polite"></div>`}
+      <input class="inp" id="n-nome" autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="${s.pid ? '' : 'Escreva um nome e dê Enter, ou toque abaixo'}" value="${esc(pre)}" ${s.pid?'readonly':''}>
+      ${s.pid ? '' : `<p class="tiny" style="margin:0">Dá pra colocar várias pessoas no mesmo lançamento.</p>`}
       ${temGente ? `<div class="pchips" id="n-pchips" role="group" aria-label="Pessoas">${pchipsHTML('')}</div>` : ''}</div>
+    <div class="seg" id="n-split" style="grid-template-columns:1fr 1fr" role="group" aria-label="Como dividir" hidden>
+      <button type="button" data-split="cada" aria-pressed="true">Cada um deve o valor</button>
+      <button type="button" data-split="dividir" aria-pressed="false">Dividir o valor</button>
+    </div>
     <div class="field"><label for="n-valor">Quanto</label><div class="money"><span>R$</span><input id="n-valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
     <div class="field"><label for="n-desc">Do quê</label><input class="inp" id="n-desc" placeholder="Ex.: metade do Uber, ingresso do show" maxlength="80"></div>
     <div class="grid2">
@@ -623,6 +694,7 @@ function novoHTML(s){
       <button type="button" class="chipbtn" data-prom="${endOfMonth()}">quando o salário cair</button>
       <button type="button" class="chipbtn" data-prom="">sem prazo</button>
     </div>
+    <div class="hint" id="n-split-prev" hidden></div>
     <div class="err" id="n-err"></div>
     <button class="btn primary" type="submit">${pg ? 'Anotar conta' : 'Anotar fiado'}</button>
   </form>`;
@@ -795,30 +867,61 @@ function wire(s){
     const prom = $('#n-prom');
     document.querySelectorAll('[data-prom]').forEach(b=>b.onclick=()=>{ prom.value=b.dataset.prom; document.querySelectorAll('[data-prom]').forEach(x=>x.setAttribute('aria-pressed', x===b)); });
     prom.oninput = ()=>document.querySelectorAll('[data-prom]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.prom===prom.value));
-    const nomeInp = $('#n-nome'), box = $('#n-pchips');
-    if(box){
-      const wireChips = () => box.querySelectorAll('[data-nome]').forEach(b=>b.onclick=()=>{
-        nomeInp.value = b.dataset.nome;
-        box.innerHTML = pchipsHTML(nomeInp.value); wireChips();
-        $('#n-err').textContent = '';
-        $('#n-valor').focus();
-      });
-      wireChips();
-      nomeInp.oninput = ()=>{ box.innerHTML = pchipsHTML(nomeInp.value); box.scrollLeft = 0; wireChips(); };
+    const nomeInp = $('#n-nome'), box = $('#n-pchips'), tokens = $('#n-tokens'), split = $('#n-split'), valorInp = $('#n-valor');
+    s.sel = s.sel || [];
+    s.split = s.split || 'cada';
+    // names picked so far (+ whatever is still typed) — one entry each
+    const nomesFinais = () => { const t = nomeInp.value.trim(); const l = s.sel.slice(); if(t && !l.some(n=>norm(n)===norm(t))) l.push(t); return l; };
+    const preview = () => {
+      const n = s.pid ? 1 : nomesFinais().length, v = toCents(valorInp.value), h = $('#n-split-prev');
+      split.hidden = n < 2;
+      if(h){ if(n>1 && v>0){ h.hidden = false; h.textContent = s.split==='dividir' ? `${n} pessoas · ${brl(Math.floor(v/n))} pra cada` : `${n} lançamentos de ${brl(v)} (total ${brl(v*n)})`; } else h.hidden = true; }
+    };
+    const refresh = () => {
+      if(tokens) tokens.innerHTML = s.sel.map((n,i)=>`<button type="button" class="tok" data-tok="${i}" aria-label="Tirar ${esc(n)}">${esc(n)}<b aria-hidden="true">×</b></button>`).join('');
+      if(tokens) tokens.querySelectorAll('[data-tok]').forEach(b=>b.onclick=()=>{ s.sel.splice(+b.dataset.tok,1); refresh(); });
+      if(box){ box.innerHTML = pchipsHTML(nomeInp.value, s.sel); box.querySelectorAll('[data-nome],[data-novo]').forEach(b=>b.onclick=()=>{ toggle(b.dataset.nome || b.dataset.novo); }); }
+      nomeInp.placeholder = s.sel.length ? 'Mais alguém? Escreva e dê Enter' : 'Escreva um nome e dê Enter, ou toque abaixo';
+      preview();
+    };
+    const toggle = nome => {
+      const i = s.sel.findIndex(n=>norm(n)===norm(nome));
+      if(i>=0) s.sel.splice(i,1); else s.sel.push(nome.trim());
+      nomeInp.value = ''; $('#n-err').textContent = ''; refresh();
+    };
+    if(!s.pid){
+      refresh();
+      nomeInp.oninput = ()=>{ if(box){ box.innerHTML = pchipsHTML(nomeInp.value, s.sel); box.scrollLeft = 0; box.querySelectorAll('[data-nome],[data-novo]').forEach(b=>b.onclick=()=>toggle(b.dataset.nome || b.dataset.novo)); } preview(); };
+      nomeInp.onkeydown = e=>{
+        if(e.key!=='Enter') return;
+        e.preventDefault();
+        const t = nomeInp.value.trim();
+        if(t){ const ex = Object.values(S.pessoas).find(p=>norm(p.nome)===norm(t)); if(!s.sel.some(n=>norm(n)===norm(t))) toggle(ex ? ex.nome : t); else { nomeInp.value=''; refresh(); } }
+        else if(s.sel.length) valorInp.focus();
+      };
+      split.querySelectorAll('[data-split]').forEach(b=>b.onclick=()=>{ s.split = b.dataset.split; split.querySelectorAll('[data-split]').forEach(x=>x.setAttribute('aria-pressed', x===b)); preview(); });
+      valorInp.addEventListener('input', preview);
     }
-    if(s.pid) setTimeout(()=>$('#n-valor')?.focus(),50);
+    if(s.pid) setTimeout(()=>valorInp?.focus(),50);
     else if(!box) setTimeout(()=>nomeInp?.focus(),50);
     $('#f-novo').onsubmit = async e=>{
       e.preventDefault();
-      const nome = $('#n-nome').value.trim(), valor = toCents($('#n-valor').value), data = $('#n-data').value || today();
+      const nomes = s.pid ? [S.pessoas[s.pid].nome] : nomesFinais(), valor = toCents(valorInp.value), data = $('#n-data').value || today();
       const err = $('#n-err');
-      if(!nome) return err.textContent = PAGAR() ? 'Escreve pra quem você deve.' : 'Escreve o nome de quem tá devendo.';
+      if(!nomes.length) return err.textContent = PAGAR() ? 'Escreve pra quem você deve.' : 'Escreve o nome de quem tá devendo.';
       if(!(valor>0)) return err.textContent='Coloca um valor maior que zero, tipo 45,90.';
-      let pid = s.pid || Object.entries(S.pessoas).find(([,p])=>p.nome.trim().toLowerCase()===nome.toLowerCase())?.[0];
-      if(!pid){ pid = 'p-'+uid(); await put('pessoas', pid, {nome, telefone:'', criadoEm:Date.now()}); }
-      await put('lanc', 'l-'+uid(), {pessoaId:pid, tipo:'divida', dir:ui.lado, valor, desc:$('#n-desc').value.trim(), data, prometido:prom.value||null, criadoEm:Date.now()});
-      toast(`Anotado: ${nome} · ${brl(valor)}`);
-      ui.sheet = {type:'pessoa', pid}; $('#layer').dataset.key=''; render();
+      const n = nomes.length, dividir = n>1 && s.split==='dividir';
+      const base = dividir ? Math.floor(valor/n) : valor, resto = dividir ? valor - base*n : 0;
+      let ultimo = null;
+      for(let i=0;i<n;i++){
+        const nome = nomes[i];
+        let pid = s.pid || Object.entries(S.pessoas).find(([,p])=>norm(p.nome)===norm(nome))?.[0];
+        if(!pid){ pid = 'p-'+uid(); await put('pessoas', pid, {nome, telefone:'', criadoEm:Date.now()}); }
+        await put('lanc', 'l-'+uid(), {pessoaId:pid, tipo:'divida', dir:ui.lado, valor:base+(i<resto?1:0), desc:$('#n-desc').value.trim(), data, prometido:prom.value||null, criadoEm:Date.now()+i});
+        ultimo = pid;
+      }
+      if(n===1){ toast(`Anotado: ${nomes[0]} · ${brl(valor)}`); ui.sheet = {type:'pessoa', pid:ultimo}; $('#layer').dataset.key=''; render(); }
+      else { toast(`Anotado pra ${n} pessoas` + (dividir ? ` · ${brl(base)} cada` : ` · ${brl(valor)} cada`)); closeSheet(); }
     };
   }
   if(s.type==='pessoa'){
@@ -865,13 +968,14 @@ function wire(s){
       navigator.clipboard.writeText(t).then(()=>toast('Mensagem copiada')).catch(()=>{ msg.focus(); msg.select(); toast('Selecionei o texto, é só copiar'); });
     };
   }
+  if(SHEETS[s.type]) SHEETS[s.type].wire(s);
   if(s.type==='resumo'){
     document.querySelectorAll('#layer [data-open]').forEach(b=>b.onclick=()=>{ $('#layer').dataset.key=''; openSheet({type:'pessoa', pid:b.dataset.open}); });
   }
   if(s.type==='importar'){
     $('#imp-ok').onclick = ()=>{
       const d = s.dados;
-      S.pessoas = d.pessoas; S.lanc = d.lanc; S.config = d.config || {};
+      KINDS.forEach(k=>S[k] = d[k] || {}); S.config = d.config || {};
       saveLocal(); toast('Backup restaurado'); closeSheet();
     };
   }
@@ -923,6 +1027,622 @@ function toast(msg, bad){
   clearTimeout(tT); tT = setTimeout(()=>t.hidden=true, 2600);
 }
 
+/* =====================================================================
+   Abas: Fiado · Contas · Cartões · Shopee · Perfumes
+   ===================================================================== */
+const ABAS = [
+  {k:'fiado', t:'Fiado', ic:'<path d="M16 20v-1.5a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4V20"/><circle cx="9" cy="7.5" r="3.5"/><path d="M22 20v-1.5a4 4 0 0 0-3-3.9M16 4a3.5 3.5 0 0 1 0 7"/>'},
+  {k:'contas', t:'Contas', ic:'<path d="M3 10h18M5.5 10v7.5M10 10v7.5M14 10v7.5M18.5 10v7.5M3 20.5h18M12 3l9 4.5H3z"/>'},
+  {k:'cartoes', t:'Cartões', ic:'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/>'},
+  {k:'shopee', t:'Shopee', ic:'<path d="M4.5 8h15l-1.2 12.5H5.7z"/><path d="M9 8a3 3 0 0 1 6 0"/><path d="M9.5 15.5c.6.8 1.5 1.2 2.5 1.2 1.3 0 2.2-.7 2.2-1.6 0-2.2-4.6-1.2-4.6-3.4 0-.9.9-1.6 2.2-1.6.9 0 1.7.3 2.2.9"/>'},
+  {k:'perfumes', t:'Perfumes', ic:'<rect x="5.5" y="9" width="13" height="12.5" rx="3.5"/><path d="M10 9V6.5h4V9M8.5 3.5h7M12 3.5v3"/>'},
+];
+const MODC = {contas:'#8FD0FF', cartoes:'#C7B6FF', shopee:'#FFAA70', perfumes:'#F7B6D8'};
+const icon = (k, size=22) => `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ABAS.find(a=>a.k===k).ic}</svg>`;
+function renderNav(){
+  let nav = $('#nav');
+  if(!nav){ nav = document.createElement('nav'); nav.id='nav'; nav.className='nav'; nav.setAttribute('aria-label','Seções'); document.body.appendChild(nav); }
+  nav.innerHTML = ABAS.map(a=>`<button data-aba="${a.k}" ${ui.aba===a.k?'aria-current="page"':''}><span class="ic">${icon(a.k)}</span>${a.t}</button>`).join('');
+  nav.querySelectorAll('[data-aba]').forEach(b=>b.onclick=()=>irAba(b.dataset.aba));
+}
+function irAba(k){
+  if(ui.aba===k){ window.scrollTo({top:0, behavior:'smooth'}); return; }
+  ui.aba = k; try{ localStorage.setItem('fiado-aba', k); }catch(e){}
+  window.scrollTo(0,0); render();
+}
+const modHero = (k, lbl, val, chips='') => `<section class="hero mod" style="--modc:${MODC[k]}">
+    <div class="lbl">${lbl}</div>
+    <div class="big num">${val<0?'<small>−R$</small>'+brlShort(-val):'<small>R$</small>'+brlShort(val)}</div>
+    <div class="meta">${chips}</div>
+    <div class="mod-ic">${icon(k, 104)}</div>
+  </section>`;
+const chip = t => `<span class="chip">${t}</span>`;
+function renderOutra(){
+  const app = $('#app'), mod = MODS[ui.aba];
+  applyLook(cfgNow());
+  app.innerHTML = headerHTML() + updHTML() + mod.html();
+  const fab = ensureFab(), f = mod.fab();
+  fab.innerHTML = '<span class="plus">+</span>'+esc(f.t); fab.onclick = f.go;
+  fab.classList.remove('pay'); fab.hidden = S.readOnly || !!ui.sheet;
+  document.documentElement.classList.toggle('locked', !!ui.sheet);
+  $('#btn-cfg').onclick = ()=>openSheet({type:'cfg'});
+  const bu = $('#btn-upd'); if(bu) bu.onclick = aplicarUpdate;
+  if(mod.wire) mod.wire();
+  renderNav(); themeColor();
+  if(ui.sheet) renderSheet();
+}
+// a delete button that needs a second tap
+function armDelete(sel, aviso, fn){
+  const b = typeof sel==='string' ? $(sel) : sel; if(!b) return;
+  const orig = b.textContent;
+  b.onclick = ()=>{
+    if(b.dataset.armed){ fn(); return; }
+    b.dataset.armed = '1'; b.textContent = aviso; b.classList.add('armed');
+    setTimeout(()=>{ if(b.isConnected){ delete b.dataset.armed; b.textContent = orig; b.classList.remove('armed'); } }, 4000);
+  };
+}
+const swatchesHTML = (cores, atual) => `<div class="swatches">${cores.map(x=>`<button type="button" class="sw" data-cor="${x}" aria-pressed="${x===atual}" aria-label="Cor ${x}"><i style="background:${x}"></i></button>`).join('')}</div>`;
+function wireSwatches(scope, s){ document.querySelectorAll(scope+' [data-cor]').forEach(b=>b.onclick=()=>{ s.cor=b.dataset.cor; document.querySelectorAll(scope+' [data-cor]').forEach(x=>x.setAttribute('aria-pressed', x===b)); }); }
+const MODS = {}, SHEETS = {};
+
+/* ---------- validação de backup das seções novas ---------- */
+const okCor = v => /^#[0-9a-f]{6}$/i.test(v||'') ? v : null;
+const okD = v => /^\d{4}-\d{2}-\d{2}$/.test(v||'') ? v : null;
+const int = v => Number.isFinite(+v) ? Math.round(+v) : 0;
+const str = (v, n=80) => String(v ?? '').slice(0, n);
+const dia = v => Math.min(31, Math.max(1, int(v) || 1));
+const SANE = {
+  contas: x=>({nome:str(x.nome,30), saldo:int(x.saldo), cor:okCor(x.cor), atualizadoEm:okD(x.atualizadoEm)}),
+  cartoes: x=>({nome:str(x.nome,30), limite:Math.max(0,int(x.limite)), fecha:dia(x.fecha), vence:dia(x.vence), cor:okCor(x.cor)}),
+  compras: x=>({cartaoId:str(x.cartaoId,80), desc:str(x.desc,60), valor:Math.max(0,int(x.valor)), parcelas:Math.min(48,Math.max(1,int(x.parcelas))), data:okD(x.data)||today(), criadoEm:int(x.criadoEm)}),
+  faturasPagas: x=>({pagoEm:okD(x.pagoEm), valor:int(x.valor)}),
+  shopee: x=>({tipo:x.tipo==='recebido'?'recebido':'previsto', valor:Math.max(0,int(x.valor)), data:okD(x.data)||today(), desc:str(x.desc,60), criadoEm:int(x.criadoEm)}),
+  perfumes: x=>({nome:str(x.nome,50), marca:str(x.marca,40), ml:Math.max(0,int(x.ml)), custo:Math.max(0,int(x.custo)), preco:Math.max(0,int(x.preco)), qtd:Math.max(0,int(x.qtd))}),
+  vendas: x=>({perfumeId:str(x.perfumeId,80), nome:str(x.nome,50), cliente:str(x.cliente,60), qtd:Math.max(1,int(x.qtd)), valor:Math.max(0,int(x.valor)), custo:Math.max(0,int(x.custo)), data:okD(x.data)||today(), pago:!!x.pago, lancId:x.lancId?str(x.lancId,80):null, criadoEm:int(x.criadoEm)}),
+};
+
+/* ---------- CONTAS ---------- */
+const CORES_CONTA = ['#8E4EC6','#2E8BC0','#12A594','#F2762E','#E5484D','#D6409F','#B88700','#5B5BD6','#3A3746'];
+const totalContas = () => Object.values(S.contas).reduce((s,c)=>s+(c.saldo||0),0);
+const totalFiado = lado => Object.keys(S.pessoas).reduce((s,id)=>s+summary(id,lado).saldo,0);
+MODS.contas = {
+  html(){
+    const lista = Object.entries(S.contas).map(([id,c])=>({id,...c})).sort((a,b)=>(b.saldo||0)-(a.saldo||0));
+    const tot = totalContas(), rec = totalFiado('receber'), dev = totalFiado('pagar'), sh = shopeeResumo().aReceber, cc = cartoesAPagar();
+    const sobra = tot + rec + sh - dev - cc;
+    return `${modHero('contas', 'saldo em contas', tot, chip(lista.length+' '+(lista.length===1?'conta':'contas')))}
+    <section class="stack">
+      <div class="sec-h"><h2>suas <em class="acc">contas</em></h2><span class="count">${lista.length?'toque pra atualizar o saldo':''}</span></div>
+      ${lista.length ? `<div class="list">${lista.map(c=>`<button class="row" data-conta="${esc(c.id)}">
+          <div class="av sq" style="background:${okCor(c.cor)||'#5B5BD6'}" aria-hidden="true">${esc(initial(c.nome))}</div>
+          <div style="min-width:0"><div class="nm">${esc(c.nome)}</div><div class="sub">atualizado ${c.atualizadoEm?fmtDate(c.atualizadoEm):'—'}</div></div>
+          <div class="right"><span class="amt num${(c.saldo||0)<0?' neg':''}">${brl(c.saldo||0)}</span></div></button>`).join('')}</div>`
+        : `<div class="empty"><b>Nenhuma conta ainda.</b><span>Toque em “Nova conta” e coloque quanto tem em cada banco ou na carteira.</span></div>`}
+    </section>
+    <section class="stack">
+      <div class="sec-h"><h2>visão <em class="acc">geral</em></h2></div>
+      <div class="box ov">
+        <div class="ov-row"><span>Saldo em contas</span><b class="num">${brl(tot)}</b></div>
+        <div class="ov-row"><span>Me devem (Fiado)</span><b class="num pos">+ ${brl(rec)}</b></div>
+        <div class="ov-row"><span>Shopee a liberar</span><b class="num pos">+ ${brl(sh)}</b></div>
+        <div class="ov-row"><span>Eu devo (Fiado)</span><b class="num neg">− ${brl(dev)}</b></div>
+        <div class="ov-row"><span>Faturas a pagar</span><b class="num neg">− ${brl(cc)}</b></div>
+        <div class="ov-row tot"><span>Se tudo entrar e você pagar tudo</span><b class="num${sobra<0?' neg':''}">${brl(sobra)}</b></div>
+      </div>
+      <p class="tiny" style="margin:0">Faturas a pagar = fatura atual + fechadas sem pagar. Parcelas dos meses seguintes ficam de fora.</p>
+    </section>`;
+  },
+  fab(){ return {t:'Nova conta', go:()=>openSheet({type:'conta'})}; },
+  wire(){ document.querySelectorAll('[data-conta]').forEach(b=>b.onclick=()=>openSheet({type:'conta', id:b.dataset.conta})); }
+};
+SHEETS.conta = {
+  html(s){
+    const c = s.id ? S.contas[s.id] : null; if(s.id && !c) return '';
+    s.cor = s.cor || okCor(c?.cor) || CORES_CONTA[Object.keys(S.contas).length % CORES_CONTA.length];
+    return `${head(c ? esc(c.nome) : 'Nova conta')}
+    <form id="f-conta" class="field" style="gap:14px" novalidate>
+      ${c ? `<div class="owe"><div><div class="lbl">saldo agora</div><div class="v num">${brl(c.saldo||0)}</div><div class="tiny" style="margin-top:4px">atualizado ${c.atualizadoEm?fmtDate(c.atualizadoEm):'—'}</div></div></div>
+      <div class="seg" role="group" aria-label="Como atualizar">
+        <button type="button" data-modo="entrou" aria-pressed="true">+ Entrou</button>
+        <button type="button" data-modo="saiu" aria-pressed="false">− Saiu</button>
+        <button type="button" data-modo="novo" aria-pressed="false">Novo saldo</button>
+      </div>` : ''}
+      <div class="field"><label for="ct-valor" id="ct-valor-l">${c ? 'Quanto entrou' : 'Saldo'}</label><div class="money"><span>R$</span><input id="ct-valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
+      <div class="field"><label for="ct-nome">Nome</label><input class="inp" id="ct-nome" placeholder="Ex.: Nubank, Inter, carteira" maxlength="30" value="${esc(c?.nome||'')}"></div>
+      <div class="field"><label>Cor</label>${swatchesHTML(CORES_CONTA, s.cor)}</div>
+      <div class="err" id="ct-err"></div>
+      <button class="btn primary" type="submit">Salvar</button>
+      ${c ? `<button type="button" class="btn danger" id="ct-del">Apagar conta</button>` : ''}
+    </form>`;
+  },
+  wire(s){
+    let modo = s.id ? 'entrou' : 'novo';
+    wireSwatches('#f-conta', s);
+    document.querySelectorAll('#f-conta [data-modo]').forEach(b=>b.onclick=()=>{
+      modo = b.dataset.modo;
+      document.querySelectorAll('#f-conta [data-modo]').forEach(x=>x.setAttribute('aria-pressed', x===b));
+      $('#ct-valor-l').textContent = {entrou:'Quanto entrou', saiu:'Quanto saiu', novo:'Saldo novo'}[modo];
+      $('#ct-valor').focus();
+    });
+    armDelete('#ct-del', 'Toque de novo pra apagar a conta', async ()=>{ const id = s.id; closeSheet(); await del('contas', id); toast('Conta apagada'); });
+    $('#f-conta').onsubmit = async e=>{
+      e.preventDefault();
+      const err = $('#ct-err'), nome = $('#ct-nome').value.trim(), raw = $('#ct-valor').value.trim();
+      if(!nome) return err.textContent = 'Dá um nome pra conta.';
+      const c = s.id ? S.contas[s.id] : null;
+      let saldo = c ? (c.saldo||0) : 0;
+      if(raw){
+        const v = toCents(raw); if(isNaN(v)) return err.textContent = 'Valor inválido. Ex.: 1.250,00';
+        if(modo==='novo') saldo = v; else if(modo==='entrou') saldo += Math.abs(v); else saldo -= Math.abs(v);
+      } else if(!c) saldo = 0;
+      const id = s.id || 'c-'+uid();
+      await put('contas', id, {nome, saldo, cor:s.cor, atualizadoEm: raw||!c ? today() : (c.atualizadoEm||today())});
+      toast(`${nome}: ${brl(saldo)}`); closeSheet();
+    };
+  }
+};
+
+/* ---------- CARTÕES ---------- */
+const CORES_CC = ['#5B3FD1','#0F62FE','#1F7A5A','#C2410C','#B4235A','#8A1C1C','#2D2A38','#8A6A00'];
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const keyOf = (y, m) => { const d = new Date(y, m, 1); return d.getFullYear()+'-'+pad(d.getMonth()+1); };
+const addKey = (k, n) => { const [y,m] = k.split('-').map(Number); return keyOf(y, m-1+n); };
+const keyNome = k => { const [y,m] = k.split('-').map(Number); return MESES[m-1] + (y!==new Date().getFullYear() ? '/'+String(y).slice(2) : ''); };
+const diaEm = (k, d) => { const [y,m] = k.split('-').map(Number); const last = new Date(y, m, 0).getDate(); return y+'-'+pad(m)+'-'+pad(Math.min(d, last)); };
+// a fatura is named by the month it closes; buying on/after the closing day goes to the next one
+function faturaDe(c, dataISO){ const d = parse(dataISO); return keyOf(d.getFullYear(), d.getMonth() + (d.getDate() >= c.fecha ? 1 : 0)); }
+const fechaEm = (c, k) => diaEm(k, c.fecha);
+const venceEm = (c, k) => c.vence > c.fecha ? diaEm(k, c.vence) : diaEm(addKey(k,1), c.vence);
+function parcelasDe(cp, id){
+  const c = S.cartoes[cp.cartaoId]; if(!c) return [];
+  const n = Math.max(1, cp.parcelas|0), base = Math.floor(cp.valor/n), resto = cp.valor - base*n, k0 = faturaDe(c, cp.data);
+  return Array.from({length:n}, (_,i)=>({key:addKey(k0,i), valor:base+(i===0?resto:0), i:i+1, n, desc:cp.desc, compraId:id}));
+}
+function cartaoInfo(id){
+  const c = S.cartoes[id];
+  const fat = {};
+  for(const [cid,cp] of Object.entries(S.compras)) if(cp.cartaoId===id) for(const p of parcelasDe(cp, cid)) (fat[p.key] = fat[p.key] || []).push(p);
+  const atual = faturaDe(c, today());
+  const paga = k => !!S.faturasPagas[id+'_'+k];
+  const total = k => (fat[k]||[]).reduce((s,p)=>s+p.valor,0);
+  const status = k => {
+    if(paga(k)) return {t:'paga', cls:'ok'};
+    const t = today();
+    if(t > venceEm(c,k)) return {t:'atrasada', cls:'late'};
+    if(t >= fechaEm(c,k)) return {t:'fechada', cls:'soon'};
+    return {t:'aberta', cls:'none'};
+  };
+  const keys = Object.keys(fat); if(!keys.includes(atual)) keys.push(atual); keys.sort();
+  const usado = keys.filter(k=>!paga(k)).reduce((s,k)=>s+total(k),0);
+  const pendentes = keys.filter(k=>k<atual && !paga(k) && total(k)>0);
+  const aPagar = pendentes.reduce((s,k)=>s+total(k),0) + (paga(atual) ? 0 : total(atual));
+  return {c, fat, atual, keys, paga, total, status, usado, pendentes, aPagar, livre:(c.limite||0)-usado};
+}
+const cartoesAPagar = () => Object.keys(S.cartoes).reduce((s,id)=>s+cartaoInfo(id).aPagar,0);
+MODS.cartoes = {
+  html(){
+    const infos = Object.keys(S.cartoes).map(id=>({id, ...cartaoInfo(id)}));
+    const aPagar = infos.reduce((s,x)=>s+x.aPagar,0);
+    const vencs = infos.flatMap(x=>[...x.pendentes, x.atual].filter(k=>!x.paga(k) && x.total(k)>0).map(k=>venceEm(x.c,k))).filter(d=>d>=today()).sort();
+    const atrasadas = infos.reduce((s,x)=>s+x.pendentes.filter(k=>today()>venceEm(x.c,k)).length,0);
+    return `${modHero('cartoes', 'faturas a pagar', aPagar,
+        chip(infos.length+' '+(infos.length===1?'cartão':'cartões')) + (vencs[0] ? chip('próximo vencimento '+fmtShort(vencs[0])) : '') + (atrasadas ? chip(atrasadas+' atrasada'+(atrasadas>1?'s':'')) : ''))}
+    <section class="stack">
+      <div class="sec-h"><h2>seus <em class="acc">cartões</em></h2><span class="count">${infos.length?'toque pra ver as faturas':''}</span></div>
+      ${infos.length ? `<div class="cards">${infos.map(x=>{
+          const pct = x.c.limite ? Math.min(100, Math.max(0, x.usado/x.c.limite*100)) : 0, st = x.status(x.atual), pend = x.pendentes.reduce((s,k)=>s+x.total(k),0);
+          return `<button class="cc" data-cc="${esc(x.id)}" style="--cc:${okCor(x.c.cor)||'#5B3FD1'}">
+            <div class="cc-top"><span>${esc(x.c.nome)}</span><span class="cc-pill">${st.t}</span></div>
+            <div><div class="cc-sub">fatura de ${keyNome(x.atual)} · vence ${fmtShort(venceEm(x.c,x.atual))}</div><div class="cc-fat num">${brl(x.total(x.atual))}</div></div>
+            ${pend ? `<div class="cc-warn">+ ${brl(pend)} de fatura fechada sem pagar</div>` : ''}
+            ${x.c.limite ? `<div class="cc-bar" aria-hidden="true"><i style="width:${pct.toFixed(1)}%"></i></div><div class="cc-meta"><span>usado ${brl(x.usado)}</span><span>livre ${brl(x.livre)}</span></div>` : ''}
+          </button>`; }).join('')}</div>
+          <button class="btn ghost" id="cc-novo">+ Novo cartão</button>`
+        : `<div class="empty"><b>Nenhum cartão ainda.</b><span>Cadastre o cartão com limite, dia que fecha e dia que vence. Depois é só lançar as compras, até parceladas.</span></div>`}
+    </section>`;
+  },
+  fab(){ return Object.keys(S.cartoes).length ? {t:'Nova compra', go:()=>openSheet({type:'compra'})} : {t:'Novo cartão', go:()=>openSheet({type:'cartaoEdit'})}; },
+  wire(){
+    document.querySelectorAll('[data-cc]').forEach(b=>b.onclick=()=>openSheet({type:'cartao', id:b.dataset.cc}));
+    const n = $('#cc-novo'); if(n) n.onclick = ()=>openSheet({type:'cartaoEdit'});
+  }
+};
+SHEETS.cartaoEdit = {
+  html(s){
+    const c = s.id ? S.cartoes[s.id] : null; if(s.id && !c) return '';
+    s.cor = s.cor || okCor(c?.cor) || CORES_CC[Object.keys(S.cartoes).length % CORES_CC.length];
+    return `${head(c ? 'Editar '+esc(c.nome) : 'Novo cartão')}
+    <form id="f-cc" class="field" style="gap:14px" novalidate>
+      <div class="field"><label for="cc-nome">Nome do cartão</label><input class="inp" id="cc-nome" maxlength="30" placeholder="Ex.: Nubank, Itaú Platinum" value="${esc(c?.nome||'')}"></div>
+      <div class="field"><label for="cc-lim">Limite</label><div class="money"><span>R$</span><input id="cc-lim" inputmode="decimal" placeholder="0,00" value="${c?.limite?brlShort(c.limite):''}"></div></div>
+      <div class="grid2" style="grid-template-columns:1fr 1fr">
+        <div class="field"><label for="cc-fecha">Dia que fecha</label><input class="inp" id="cc-fecha" inputmode="numeric" maxlength="2" placeholder="Ex.: 3" value="${c?.fecha||''}"></div>
+        <div class="field"><label for="cc-vence">Dia que vence</label><input class="inp" id="cc-vence" inputmode="numeric" maxlength="2" placeholder="Ex.: 10" value="${c?.vence||''}"></div>
+      </div>
+      <p class="tiny" style="margin:0">Compras feitas no dia do fechamento ou depois entram na fatura seguinte.</p>
+      <div class="field"><label>Cor</label>${swatchesHTML(CORES_CC, s.cor)}</div>
+      <div class="err" id="cc-err"></div>
+      <button class="btn primary" type="submit">Salvar cartão</button>
+      ${c ? `<button type="button" class="btn danger" id="cc-del">Apagar cartão</button>` : ''}
+    </form>`;
+  },
+  wire(s){
+    wireSwatches('#f-cc', s);
+    armDelete('#cc-del', 'Toque de novo: apaga o cartão e as compras dele', async ()=>{
+      const id = s.id; closeSheet();
+      for(const [cid,cp] of Object.entries(S.compras)) if(cp.cartaoId===id) await del('compras', cid);
+      for(const k of Object.keys(S.faturasPagas)) if(k.startsWith(id+'_')) await del('faturasPagas', k);
+      await del('cartoes', id); toast('Cartão apagado');
+    });
+    $('#f-cc').onsubmit = async e=>{
+      e.preventDefault();
+      const err = $('#cc-err'), nome = $('#cc-nome').value.trim(), lim = toCents($('#cc-lim').value||'0');
+      const fecha = parseInt($('#cc-fecha').value,10), vence = parseInt($('#cc-vence').value,10);
+      if(!nome) return err.textContent = 'Dá um nome pro cartão.';
+      if(isNaN(lim) || lim<0) return err.textContent = 'Limite inválido. Ex.: 5.000';
+      if(!(fecha>=1 && fecha<=31)) return err.textContent = 'Dia que fecha: um número de 1 a 31.';
+      if(!(vence>=1 && vence<=31)) return err.textContent = 'Dia que vence: um número de 1 a 31.';
+      const id = s.id || 'cc-'+uid();
+      await put('cartoes', id, {nome, limite:lim, fecha, vence, cor:s.cor});
+      toast(s.id ? 'Cartão salvo' : 'Cartão criado');
+      $('#layer').dataset.key=''; openSheet({type:'cartao', id});
+    };
+  }
+};
+SHEETS.cartao = {
+  html(s){
+    if(!S.cartoes[s.id]) return '';
+    const I = cartaoInfo(s.id);
+    if(!s.k || !I.keys.includes(s.k)) s.k = I.pendentes[0] || I.atual;
+    const k = s.k, st = I.status(k), parc = (I.fat[k]||[]).slice().sort((a,b)=>b.valor-a.valor);
+    return `${head(esc(I.c.nome))}
+    <div class="pchips" id="cc-meses" role="group" aria-label="Faturas">${I.keys.map(x=>`<button type="button" class="chipbtn" data-k="${x}" aria-pressed="${x===k}">${keyNome(x)}${x===I.atual?' · atual':''}</button>`).join('')}</div>
+    <div class="owe"><div><div class="lbl">fatura de ${keyNome(k)}</div><div class="v num">${brl(I.total(k))}</div>
+      <div style="margin-top:6px"><span class="pill ${st.cls}">${st.t}</span> <span class="tiny">fecha ${fmtShort(fechaEm(I.c,k))} · vence ${fmtDate(venceEm(I.c,k))}</span></div></div></div>
+    ${I.total(k)>0 ? `<button class="btn ${I.paga(k)?'ghost':'primary'}" id="cc-pagar">${I.paga(k)?'Desmarcar: ainda não paguei':'Marcar fatura como paga'}</button>` : ''}
+    <div class="sec-h"><h2 style="font-size:18px">nesta fatura</h2><span class="count">${parc.length} ${parc.length===1?'item':'itens'}</span></div>
+    <div class="tl">${parc.map(p=>`<div class="tl-item">
+        <div style="min-width:0"><div class="d">${esc(p.desc||'Compra')}</div><div class="s">${p.n>1?`parcela ${p.i} de ${p.n}`:'à vista'}</div></div>
+        <div class="v num">${brl(p.valor)}</div>
+        <button class="del" data-delc="${esc(p.compraId)}" aria-label="Apagar compra">apagar</button></div>`).join('') || '<div class="tl-item"><span class="tiny">Nada nesta fatura.</span></div>'}</div>
+    <p class="tiny" style="margin:0">Apagar uma compra parcelada tira todas as parcelas dela.</p>
+    ${I.c.limite ? `<div class="box ov"><div class="ov-row"><span>Limite</span><b class="num">${brl(I.c.limite)}</b></div><div class="ov-row"><span>Usado (todas as parcelas)</span><b class="num neg">${brl(I.usado)}</b></div><div class="ov-row tot"><span>Livre</span><b class="num">${brl(I.livre)}</b></div></div>` : ''}
+    <div class="grid2" style="grid-template-columns:1fr 1fr"><button class="btn lime" id="cc-compra">+ Compra</button><button class="btn ghost" id="cc-edit">Editar cartão</button></div>`;
+  },
+  wire(s){
+    const sel = document.querySelector('#cc-meses [aria-pressed="true"]'); if(sel) sel.scrollIntoView({inline:'center', block:'nearest'});
+    document.querySelectorAll('#cc-meses [data-k]').forEach(b=>b.onclick=()=>{ s.k = b.dataset.k; rerenderSheet(); });
+    const pg = $('#cc-pagar');
+    if(pg) pg.onclick = async ()=>{
+      const I = cartaoInfo(s.id), key = s.id+'_'+s.k;
+      if(I.paga(s.k)){ await del('faturasPagas', key); toast('Fatura marcada como não paga'); }
+      else { await put('faturasPagas', key, {pagoEm:today(), valor:I.total(s.k)}); toast('Fatura paga − '+brl(I.total(s.k))); }
+      rerenderSheet();
+    };
+    document.querySelectorAll('[data-delc]').forEach(b=>armDelete(b, 'confirmar', async ()=>{ await del('compras', b.dataset.delc); toast('Compra apagada'); rerenderSheet(); }));
+    $('#cc-compra').onclick = ()=>{ $('#layer').dataset.key=''; openSheet({type:'compra', cartaoId:s.id}); };
+    $('#cc-edit').onclick = ()=>{ $('#layer').dataset.key=''; openSheet({type:'cartaoEdit', id:s.id}); };
+  }
+};
+SHEETS.compra = {
+  html(s){
+    const ids = Object.keys(S.cartoes); if(!ids.length) return '';
+    if(!S.cartoes[s.cartaoId]) s.cartaoId = ids[0];
+    s.n = s.n || 1;
+    return `${head('Nova compra')}
+    <form id="f-compra" class="field" style="gap:14px" novalidate>
+      <div class="field"><label>Cartão</label><div class="chips">${ids.map(id=>`<button type="button" class="chipbtn" data-cid="${esc(id)}" aria-pressed="${id===s.cartaoId}">${esc(S.cartoes[id].nome)}</button>`).join('')}</div></div>
+      <div class="field"><label for="cp-valor">Valor total</label><div class="money"><span>R$</span><input id="cp-valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
+      <div class="field"><label for="cp-desc">O que comprou</label><input class="inp" id="cp-desc" maxlength="60" placeholder="Ex.: tênis, mercado, presente"></div>
+      <div class="field"><label>Parcelas</label><div class="chips">${[1,2,3,4,5,6,10,12].map(n=>`<button type="button" class="chipbtn" data-n="${n}" aria-pressed="${n===s.n}">${n===1?'à vista':n+'×'}</button>`).join('')}
+        <input class="inp" id="cp-n" inputmode="numeric" maxlength="2" style="width:84px;padding:7px 10px" placeholder="outro" aria-label="Outro número de parcelas"></div></div>
+      <div class="field"><label for="cp-data">Data da compra</label><input class="inp" type="date" id="cp-data" value="${today()}"></div>
+      <div class="hint" id="cp-prev" aria-live="polite"></div>
+      <div class="err" id="cp-err"></div>
+      <button class="btn primary" type="submit">Lançar compra</button>
+    </form>`;
+  },
+  wire(s){
+    const prev = ()=>{
+      const v = toCents($('#cp-valor').value), c = S.cartoes[s.cartaoId], box = $('#cp-prev');
+      if(!(v>0) || !c){ box.textContent = ''; box.hidden = true; return; }
+      const k = faturaDe(c, $('#cp-data').value || today());
+      box.hidden = false;
+      box.textContent = (s.n>1 ? `${s.n}× de ${brl(Math.floor(v/s.n))} · a 1ª entra na fatura de ${keyNome(k)}` : `Entra na fatura de ${keyNome(k)}`) + ` (vence ${fmtShort(venceEm(c,k))}).`;
+    };
+    prev();
+    document.querySelectorAll('#f-compra [data-cid]').forEach(b=>b.onclick=()=>{ s.cartaoId = b.dataset.cid; document.querySelectorAll('#f-compra [data-cid]').forEach(x=>x.setAttribute('aria-pressed', x===b)); prev(); });
+    document.querySelectorAll('#f-compra [data-n]').forEach(b=>b.onclick=()=>{ s.n = +b.dataset.n; $('#cp-n').value=''; document.querySelectorAll('#f-compra [data-n]').forEach(x=>x.setAttribute('aria-pressed', x===b)); prev(); });
+    $('#cp-n').oninput = e=>{ const n = parseInt(e.target.value,10); if(n>=1 && n<=48){ s.n = n; document.querySelectorAll('#f-compra [data-n]').forEach(x=>x.setAttribute('aria-pressed', +x.dataset.n===n)); prev(); } };
+    $('#cp-valor').oninput = prev; $('#cp-data').oninput = prev;
+    $('#f-compra').onsubmit = async e=>{
+      e.preventDefault();
+      const v = toCents($('#cp-valor').value), err = $('#cp-err');
+      if(!(v>0)) return err.textContent = 'Coloca o valor total da compra.';
+      const data = $('#cp-data').value || today();
+      await put('compras', 'cp-'+uid(), {cartaoId:s.cartaoId, desc:$('#cp-desc').value.trim(), valor:v, parcelas:s.n, data, criadoEm:Date.now()});
+      toast(s.n>1 ? `Compra lançada: ${s.n}× de ${brl(Math.floor(v/s.n))}` : 'Compra lançada: '+brl(v));
+      const c = S.cartoes[s.cartaoId];
+      $('#layer').dataset.key=''; openSheet({type:'cartao', id:s.cartaoId, k:faturaDe(c, data)});
+    };
+  }
+};
+
+/* ---------- SHOPEE ---------- */
+function shopeeResumo(){
+  const its = Object.entries(S.shopee).map(([id,x])=>({id,...x}));
+  const prev = its.filter(x=>x.tipo==='previsto').sort((a,b)=>a.data.localeCompare(b.data) || (a.criadoEm||0)-(b.criadoEm||0));
+  let rec = its.filter(x=>x.tipo==='recebido').reduce((s,x)=>s+x.valor,0);
+  const recebido = rec, abertas = [];
+  // money received pays off the oldest releases first
+  for(const p of prev){ const u = Math.min(rec, p.valor); rec -= u; if(p.valor-u>0) abertas.push({...p, resta:p.valor-u}); }
+  return {its, abertas, aReceber:abertas.reduce((s,x)=>s+x.resta,0), recebido, sobra:rec};
+}
+MODS.shopee = {
+  html(){
+    const R = shopeeResumo(), t = today();
+    const ateHoje = R.abertas.filter(a=>a.data<=t).reduce((s,a)=>s+a.resta,0);
+    const semana = R.abertas.filter(a=>a.data>t && daysBetween(t,a.data)<=7).reduce((s,a)=>s+a.resta,0);
+    const mes = t.slice(0,7);
+    const recMes = R.its.filter(x=>x.tipo==='recebido' && x.data.slice(0,7)===mes).reduce((s,x)=>s+x.valor,0);
+    const dias = {}; for(const a of R.abertas) (dias[a.data] = dias[a.data] || []).push(a);
+    const hist = R.its.slice().sort((a,b)=>b.data.localeCompare(a.data) || (b.criadoEm||0)-(a.criadoEm||0));
+    return `${modHero('shopee', 'a receber da Shopee', R.aReceber, (ateHoje?chip('já liberado '+brl(ateHoje)):'') + (semana?chip('próx. 7 dias '+brl(semana)):'') + chip('recebido em '+MESES[+mes.slice(5)-1]+' '+brl(recMes)))}
+    <div class="grid2" style="grid-template-columns:1fr 1fr">
+      <button class="btn shp" id="sh-rec"><b>✓</b> Recebi</button>
+      <button class="btn ghost" id="sh-prev">+ A liberar</button>
+    </div>
+    ${R.sobra>0 ? `<div class="banner"><span>Você registrou ${brl(R.sobra)} recebidos a mais do que tinha a liberar.</span></div>` : ''}
+    <section class="stack">
+      <div class="sec-h"><h2>próximas <em class="acc">liberações</em></h2><span class="count">${R.abertas.length?'toque no dia pra ver':''}</span></div>
+      ${R.abertas.length ? `<div class="box">${Object.keys(dias).sort().map(d=>{
+          const it = dias[d], tot = it.reduce((s,a)=>s+a.resta,0), q = quandoTxt(d);
+          const pill = d<=t ? {t: d===t ? 'libera hoje' : 'já liberado', cls:'ok'} : q;
+          return `<details class="day"><summary><div style="min-width:0"><div class="d">${fmtDate(d)}</div><div class="s"><span class="pill ${pill.cls}">${pill.t}</span> · ${it.length} ${it.length===1?'lançamento':'lançamentos'}</div></div><div class="v num">${brl(tot)}</div><span class="chev" aria-hidden="true">›</span></summary>
+            ${it.map(a=>`<div class="who" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><div class="n">${esc(a.desc||'Shopee')}</div><div class="s">${a.resta<a.valor?`faltam ${brl(a.resta)} de ${brl(a.valor)}`:'inteiro'}</div></div><div class="v num">${brl(a.resta)}</div></div>`).join('')}
+          </details>`; }).join('')}</div>`
+        : `<div class="empty"><b>Nada a liberar.</b><span>Toque em “A liberar” e anote quanto a Shopee vai soltar e em que dia.</span></div>`}
+    </section>
+    ${hist.length ? `<section class="stack">
+      <div class="sec-h"><h2>histórico</h2><span class="count">${hist.length} ${hist.length===1?'lançamento':'lançamentos'}</span></div>
+      <div class="tl">${hist.slice(0,60).map(x=>`<div class="tl-item">
+          <div style="min-width:0"><div class="d">${x.tipo==='recebido' ? 'Recebi' : 'A liberar'}${x.desc?' · '+esc(x.desc):''}</div><div class="s">${x.tipo==='recebido'?'caiu ':'libera '}${fmtDate(x.data)}</div></div>
+          <div class="v num ${x.tipo==='recebido'?'in':''}">${x.tipo==='recebido'?'+ ':''}${brl(x.valor)}</div>
+          <button class="del" data-delsh="${esc(x.id)}" aria-label="Apagar lançamento">apagar</button></div>`).join('')}</div>
+    </section>` : ''}`;
+  },
+  fab(){ return {t:'A liberar', go:()=>openSheet({type:'shopeePrev'})}; },
+  wire(){
+    $('#sh-rec').onclick = ()=>openSheet({type:'shopeeRec'});
+    $('#sh-prev').onclick = ()=>openSheet({type:'shopeePrev'});
+    document.querySelectorAll('[data-delsh]').forEach(b=>armDelete(b, 'confirmar', async ()=>{ await del('shopee', b.dataset.delsh); toast('Lançamento apagado'); }));
+  }
+};
+SHEETS.shopeePrev = {
+  html(){
+    return `${head('A liberar')}
+    <p class="tiny" style="margin:0">Quanto a Shopee vai liberar e em que dia. Pode ser um pedido ou o total de um lote.</p>
+    <form id="f-shp" class="field" style="gap:14px" novalidate>
+      <div class="field"><label for="sp-valor">Valor</label><div class="money"><span>R$</span><input id="sp-valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
+      <div class="field"><label for="sp-data">Libera em</label><input class="inp" type="date" id="sp-data" value="${addDays(today(),7)}"></div>
+      <div class="chips"><button type="button" class="chipbtn" data-d="${today()}">hoje</button><button type="button" class="chipbtn" data-d="${addDays(today(),7)}" aria-pressed="true">em 7 dias</button><button type="button" class="chipbtn" data-d="${addDays(today(),15)}">em 15 dias</button><button type="button" class="chipbtn" data-d="${addDays(today(),30)}">em 30 dias</button></div>
+      <div class="field"><label for="sp-desc">Referência (opcional)</label><input class="inp" id="sp-desc" maxlength="60" placeholder="Ex.: pedido #2411, vendas da semana"></div>
+      <div class="err" id="sp-err"></div>
+      <button class="btn primary" type="submit">Anotar</button>
+    </form>`;
+  },
+  wire(){
+    const d = $('#sp-data');
+    document.querySelectorAll('#f-shp [data-d]').forEach(b=>b.onclick=()=>{ d.value = b.dataset.d; document.querySelectorAll('#f-shp [data-d]').forEach(x=>x.setAttribute('aria-pressed', x===b)); });
+    d.oninput = ()=>document.querySelectorAll('#f-shp [data-d]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.d===d.value));
+    $('#f-shp').onsubmit = async e=>{
+      e.preventDefault();
+      const v = toCents($('#sp-valor').value);
+      if(!(v>0)) return $('#sp-err').textContent = 'Coloca o valor, tipo 189,90.';
+      await put('shopee', 'sh-'+uid(), {tipo:'previsto', valor:v, data:d.value||today(), desc:$('#sp-desc').value.trim(), criadoEm:Date.now()});
+      toast(`Anotado: ${brl(v)} libera ${fmtShort(d.value||today())}`); closeSheet();
+    };
+  }
+};
+SHEETS.shopeeRec = {
+  html(s){
+    const R = shopeeResumo(), liberado = R.abertas.filter(a=>a.data<=today()).reduce((x,a)=>x+a.resta,0);
+    const contas = Object.entries(S.contas);
+    s.conta = s.conta ?? '';
+    return `${head('Recebi da Shopee')}
+    <p class="tiny" style="margin:0">O valor sai do total a receber, começando pelas liberações mais antigas.</p>
+    <form id="f-shr" class="field" style="gap:14px" novalidate>
+      <div class="field"><label for="sr-valor">Quanto caiu</label><div class="money"><span>R$</span><input id="sr-valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
+      ${liberado||R.aReceber ? `<div class="chips">${liberado?`<button type="button" class="chipbtn" data-v="${liberado}">tudo que já liberou (${brl(liberado)})</button>`:''}${R.aReceber && R.aReceber!==liberado?`<button type="button" class="chipbtn" data-v="${R.aReceber}">tudo (${brl(R.aReceber)})</button>`:''}</div>` : ''}
+      <div class="field"><label for="sr-data">Quando</label><input class="inp" type="date" id="sr-data" value="${today()}"></div>
+      <div class="field"><label for="sr-desc">Referência (opcional)</label><input class="inp" id="sr-desc" maxlength="60" placeholder="Ex.: saque da semana"></div>
+      ${contas.length ? `<div class="field"><label>Somar no saldo de</label><div class="chips">
+        <button type="button" class="chipbtn" data-conta="" aria-pressed="${s.conta===''}">não somar</button>
+        ${contas.map(([id,c])=>`<button type="button" class="chipbtn" data-conta="${esc(id)}" aria-pressed="${s.conta===id}">${esc(c.nome)}</button>`).join('')}</div></div>` : ''}
+      <div class="err" id="sr-err"></div>
+      <button class="btn shp" type="submit">Registrar recebimento</button>
+    </form>`;
+  },
+  wire(s){
+    const v = $('#sr-valor');
+    document.querySelectorAll('#f-shr [data-v]').forEach(b=>b.onclick=()=>{ v.value = brlShort(+b.dataset.v); });
+    document.querySelectorAll('#f-shr [data-conta]').forEach(b=>b.onclick=()=>{ s.conta = b.dataset.conta; document.querySelectorAll('#f-shr [data-conta]').forEach(x=>x.setAttribute('aria-pressed', x===b)); });
+    $('#f-shr').onsubmit = async e=>{
+      e.preventDefault();
+      const val = toCents(v.value);
+      if(!(val>0)) return $('#sr-err').textContent = 'Coloca quanto caiu.';
+      await put('shopee', 'sh-'+uid(), {tipo:'recebido', valor:val, data:$('#sr-data').value||today(), desc:$('#sr-desc').value.trim(), criadoEm:Date.now()});
+      if(s.conta && S.contas[s.conta]){ const c = S.contas[s.conta]; await put('contas', s.conta, {...c, saldo:(c.saldo||0)+val, atualizadoEm:today()}); }
+      toast('Shopee + '+brl(val)+(s.conta && S.contas[s.conta] ? ' no '+S.contas[s.conta].nome : ''));
+      closeSheet();
+    };
+  }
+};
+
+/* ---------- PERFUMES (vendas) ---------- */
+MODS.perfumes = {
+  html(){
+    const t = today(), mes = t.slice(0,7);
+    const perf = Object.entries(S.perfumes).map(([id,p])=>({id,...p})).sort((a,b)=>(b.qtd>0)-(a.qtd>0) || a.nome.localeCompare(b.nome));
+    const vendas = Object.entries(S.vendas).map(([id,v])=>({id,...v})).sort((a,b)=>b.data.localeCompare(a.data) || (b.criadoEm||0)-(a.criadoEm||0));
+    const vm = vendas.filter(v=>v.data.slice(0,7)===mes);
+    const totMes = vm.reduce((s,v)=>s+v.valor,0), lucroMes = vm.reduce((s,v)=>s+v.valor-(v.custo||0)*v.qtd,0);
+    const un = perf.reduce((s,p)=>s+(p.qtd||0),0), estoqueCusto = perf.reduce((s,p)=>s+(p.qtd||0)*(p.custo||0),0);
+    return `${modHero('perfumes', 'vendido em '+MESES[+mes.slice(5)-1], totMes, chip('lucro '+brl(lucroMes)) + chip(vm.length+' '+(vm.length===1?'venda':'vendas')) + chip(un+' em estoque'))}
+    <section class="stack">
+      <div class="sec-h"><h2><em class="acc">estoque</em></h2><button class="link-btn" id="pf-novo">+ Perfume</button></div>
+      ${perf.length ? `<div class="list">${perf.map(p=>`<button class="row" data-perf="${esc(p.id)}">
+          <div class="av sq" style="background:#D6409F" aria-hidden="true">${esc(initial(p.nome))}</div>
+          <div style="min-width:0"><div class="nm">${esc(p.nome)}</div><div class="sub">${[p.marca?esc(p.marca):'', p.ml?p.ml+' ml':'', 'custo '+brl(p.custo||0)].filter(Boolean).join(' · ')}</div></div>
+          <div class="right"><span class="amt num">${brl(p.preco||0)}</span><span class="pill ${p.qtd>0?'ok':'late'}">${p.qtd>0 ? p.qtd+' un.' : 'esgotado'}</span></div></button>`).join('')}</div>
+          <p class="tiny" style="margin:0">Estoque parado: ${brl(estoqueCusto)} em custo.</p>`
+        : `<div class="empty"><b>Nenhum perfume no estoque.</b><span>Cadastre o perfume com quanto pagou e por quanto vende. Depois é só lançar as vendas.</span></div>`}
+    </section>
+    ${vendas.length ? `<section class="stack">
+      <div class="sec-h"><h2>vendas</h2><span class="count">${vendas.length}</span></div>
+      <div class="list">${vendas.slice(0,40).map(v=>`<button class="row" data-venda="${esc(v.id)}">
+          <div class="av" style="background:${avColor(v.cliente||v.nome)}" aria-hidden="true">${esc(initial(v.cliente||v.nome))}</div>
+          <div style="min-width:0"><div class="nm">${esc(v.cliente||'Cliente')}</div><div class="sub">${v.qtd>1?v.qtd+'× ':''}${esc(v.nome)} · ${fmtShort(v.data)}</div></div>
+          <div class="right"><span class="amt num">${brl(v.valor)}</span><span class="pill ${v.pago?'ok':'soon'}">${v.pago?'pago':'no fiado'}</span></div></button>`).join('')}</div>
+    </section>` : ''}`;
+  },
+  fab(){ return Object.keys(S.perfumes).length ? {t:'Nova venda', go:()=>openSheet({type:'venda'})} : {t:'Novo perfume', go:()=>openSheet({type:'perfume'})}; },
+  wire(){
+    $('#pf-novo').onclick = ()=>openSheet({type:'perfume'});
+    document.querySelectorAll('[data-perf]').forEach(b=>b.onclick=()=>openSheet({type:'perfume', id:b.dataset.perf}));
+    document.querySelectorAll('[data-venda]').forEach(b=>b.onclick=()=>openSheet({type:'vendaVer', id:b.dataset.venda}));
+  }
+};
+SHEETS.perfume = {
+  html(s){
+    const p = s.id ? S.perfumes[s.id] : null; if(s.id && !p) return '';
+    s.qtd = s.qtd ?? (p ? p.qtd : 1);
+    return `${head(p ? esc(p.nome) : 'Novo perfume')}
+    <form id="f-pf" class="field" style="gap:14px" novalidate>
+      <div class="field"><label for="pf-nome">Nome</label><input class="inp" id="pf-nome" maxlength="50" placeholder="Ex.: Club de Nuit Intense" value="${esc(p?.nome||'')}"></div>
+      <div class="grid2" style="grid-template-columns:1fr 110px">
+        <div class="field"><label for="pf-marca">Marca</label><input class="inp" id="pf-marca" maxlength="40" placeholder="Ex.: Armaf" value="${esc(p?.marca||'')}"></div>
+        <div class="field"><label for="pf-ml">ml</label><input class="inp" id="pf-ml" inputmode="numeric" maxlength="4" placeholder="100" value="${p?.ml||''}"></div>
+      </div>
+      <div class="grid2" style="grid-template-columns:1fr 1fr">
+        <div class="field"><label for="pf-custo">Paguei (cada)</label><div class="money sm"><span>R$</span><input id="pf-custo" inputmode="decimal" placeholder="0,00" value="${p?brlShort(p.custo||0):''}"></div></div>
+        <div class="field"><label for="pf-preco">Vendo por</label><div class="money sm"><span>R$</span><input id="pf-preco" inputmode="decimal" placeholder="0,00" value="${p?brlShort(p.preco||0):''}"></div></div>
+      </div>
+      <div class="hint" id="pf-margem" hidden></div>
+      <div class="field"><label>Quantidade em estoque</label><div class="stepper"><button type="button" id="pf-menos" aria-label="Menos um">−</button><output id="pf-qtd" class="num">${s.qtd}</output><button type="button" id="pf-mais" aria-label="Mais um">+</button></div></div>
+      <div class="err" id="pf-err"></div>
+      <button class="btn primary" type="submit">Salvar perfume</button>
+      ${p ? `<button type="button" class="btn danger" id="pf-del">Apagar perfume</button>` : ''}
+    </form>`;
+  },
+  wire(s){
+    const q = $('#pf-qtd');
+    $('#pf-menos').onclick = ()=>{ s.qtd = Math.max(0, s.qtd-1); q.textContent = s.qtd; };
+    $('#pf-mais').onclick = ()=>{ s.qtd = Math.min(9999, s.qtd+1); q.textContent = s.qtd; };
+    const margem = ()=>{ const c = toCents($('#pf-custo').value), v = toCents($('#pf-preco').value), m = $('#pf-margem');
+      if(c>0 && v>0){ m.hidden = false; m.textContent = `Lucro de ${brl(v-c)} por unidade (${Math.round((v-c)/c*100)}% sobre o custo).`; } else m.hidden = true; };
+    $('#pf-custo').oninput = margem; $('#pf-preco').oninput = margem; margem();
+    armDelete('#pf-del', 'Toque de novo pra apagar', async ()=>{ const id = s.id; closeSheet(); await del('perfumes', id); toast('Perfume apagado'); });
+    $('#f-pf').onsubmit = async e=>{
+      e.preventDefault();
+      const nome = $('#pf-nome').value.trim(), custo = toCents($('#pf-custo').value||'0'), preco = toCents($('#pf-preco').value||'0');
+      if(!nome) return $('#pf-err').textContent = 'Coloca o nome do perfume.';
+      if(isNaN(custo) || isNaN(preco)) return $('#pf-err').textContent = 'Valor inválido. Ex.: 189,90';
+      const id = s.id || 'pf-'+uid();
+      await put('perfumes', id, {nome, marca:$('#pf-marca').value.trim(), ml:parseInt($('#pf-ml').value,10)||0, custo, preco, qtd:s.qtd});
+      toast(s.id ? 'Perfume salvo' : 'Perfume no estoque'); closeSheet();
+    };
+  }
+};
+SHEETS.venda = {
+  html(s){
+    const perf = Object.entries(S.perfumes).map(([id,p])=>({id,...p})).sort((a,b)=>(b.qtd>0)-(a.qtd>0) || a.nome.localeCompare(b.nome));
+    if(!perf.length) return '';
+    if(!s.pf || !S.perfumes[s.pf]) s.pf = (perf.find(p=>p.qtd>0) || perf[0]).id;
+    s.qtd = s.qtd || 1; s.pago = s.pago ?? true;
+    const p = S.perfumes[s.pf];
+    return `${head('Nova venda')}
+    <form id="f-venda" class="field" style="gap:14px" novalidate>
+      <div class="field"><label>Perfume</label><div class="pchips" id="vd-pf">${perf.map(x=>`<button type="button" class="pchip" data-pf="${esc(x.id)}" aria-pressed="${x.id===s.pf}"><span class="t"><span class="n">${esc(x.nome)}</span><small>${x.qtd>0?x.qtd+' em estoque · '+brl(x.preco||0):'esgotado'}</small></span></button>`).join('')}</div></div>
+      <div class="field"><label for="vd-cli">Cliente</label><input class="inp" id="vd-cli" autocomplete="off" autocapitalize="words" placeholder="Nome de quem comprou" maxlength="60">
+        ${Object.keys(S.pessoas).length ? `<div class="pchips" id="vd-chips">${pchipsHTML('')}</div>` : ''}</div>
+      <div class="grid2" style="grid-template-columns:auto 1fr;align-items:end">
+        <div class="field"><label>Quantidade</label><div class="stepper"><button type="button" id="vd-menos" aria-label="Menos um">−</button><output id="vd-qtd" class="num">${s.qtd}</output><button type="button" id="vd-mais" aria-label="Mais um">+</button></div></div>
+        <div class="field"><label for="vd-valor">Total da venda</label><div class="money sm"><span>R$</span><input id="vd-valor" inputmode="decimal" value="${brlShort((p.preco||0)*s.qtd)}"></div></div>
+      </div>
+      <div class="field"><label for="vd-data">Data</label><input class="inp" type="date" id="vd-data" value="${today()}"></div>
+      <div class="field"><label>Pagamento</label><div class="seg" style="grid-template-columns:1fr 1fr" role="group">
+        <button type="button" data-pago="1" aria-pressed="${s.pago}">Já pagou</button>
+        <button type="button" data-pago="0" aria-pressed="${!s.pago}">Vai pagar depois</button></div></div>
+      <div class="field" id="vd-prazo-box" ${s.pago?'hidden':''}><label for="vd-prazo">Prometeu pagar em</label><input class="inp" type="date" id="vd-prazo" value="${nextFriday()}">
+        <p class="tiny" style="margin:0">Vira um fiado em “Me devem”, com o nome do perfume.</p></div>
+      <div class="hint" id="vd-lucro"></div>
+      <div class="err" id="vd-err"></div>
+      <button class="btn primary" type="submit">Registrar venda</button>
+    </form>`;
+  },
+  wire(s){
+    let editado = false;
+    const valor = $('#vd-valor'), q = $('#vd-qtd'), cli = $('#vd-cli'), chipsBox = $('#vd-chips');
+    const lucro = ()=>{ const p = S.perfumes[s.pf], v = toCents(valor.value), l = $('#vd-lucro'); if(v>0){ l.hidden=false; l.textContent = `Lucro nesta venda: ${brl(v - (p.custo||0)*s.qtd)}`; } else l.hidden = true; };
+    const autoValor = ()=>{ if(!editado){ valor.value = brlShort((S.perfumes[s.pf].preco||0)*s.qtd); } lucro(); };
+    lucro();
+    valor.oninput = ()=>{ editado = true; lucro(); };
+    document.querySelectorAll('#vd-pf [data-pf]').forEach(b=>b.onclick=()=>{ s.pf = b.dataset.pf; editado = false; document.querySelectorAll('#vd-pf [data-pf]').forEach(x=>x.setAttribute('aria-pressed', x===b)); autoValor(); });
+    $('#vd-menos').onclick = ()=>{ s.qtd = Math.max(1, s.qtd-1); q.textContent = s.qtd; autoValor(); };
+    $('#vd-mais').onclick = ()=>{ s.qtd = Math.min(999, s.qtd+1); q.textContent = s.qtd; autoValor(); };
+    if(chipsBox){
+      const wire = ()=>chipsBox.querySelectorAll('[data-nome],[data-novo]').forEach(b=>b.onclick=()=>{ cli.value = b.dataset.nome || b.dataset.novo; chipsBox.innerHTML = pchipsHTML(cli.value, [cli.value]); wire(); });
+      wire(); cli.oninput = ()=>{ chipsBox.innerHTML = pchipsHTML(cli.value, [cli.value]); wire(); };
+    }
+    document.querySelectorAll('#f-venda [data-pago]').forEach(b=>b.onclick=()=>{ s.pago = b.dataset.pago==='1'; document.querySelectorAll('#f-venda [data-pago]').forEach(x=>x.setAttribute('aria-pressed', x===b)); $('#vd-prazo-box').hidden = s.pago; });
+    $('#f-venda').onsubmit = async e=>{
+      e.preventDefault();
+      const err = $('#vd-err'), p = S.perfumes[s.pf], v = toCents(valor.value), cliente = cli.value.trim(), data = $('#vd-data').value || today();
+      if(!(v>0)) return err.textContent = 'Coloca o valor da venda.';
+      if(s.qtd > (p.qtd||0)) return err.textContent = (p.qtd||0) ? `Só tem ${p.qtd} em estoque. Ajuste a quantidade ou o estoque.` : 'Esse perfume está esgotado. Atualize o estoque primeiro.';
+      if(!s.pago && !cliente) return err.textContent = 'Pra mandar pro fiado, coloca o nome do cliente.';
+      let lancId = null;
+      if(!s.pago){
+        let pid = Object.entries(S.pessoas).find(([,x])=>norm(x.nome)===norm(cliente))?.[0];
+        if(!pid){ pid = 'p-'+uid(); await put('pessoas', pid, {nome:cliente, telefone:'', criadoEm:Date.now()}); }
+        lancId = 'l-'+uid();
+        await put('lanc', lancId, {pessoaId:pid, tipo:'divida', dir:'receber', valor:v, desc:(s.qtd>1?s.qtd+'× ':'')+'Perfume '+p.nome, data, prometido:$('#vd-prazo').value||null, criadoEm:Date.now()});
+      }
+      await put('perfumes', s.pf, {...p, qtd:(p.qtd||0)-s.qtd});
+      await put('vendas', 'v-'+uid(), {perfumeId:s.pf, nome:p.nome, cliente, qtd:s.qtd, valor:v, custo:p.custo||0, data, pago:s.pago, lancId, criadoEm:Date.now()});
+      toast(s.pago ? 'Venda registrada: '+brl(v) : `Venda no fiado de ${cliente}: ${brl(v)}`);
+      closeSheet();
+    };
+  }
+};
+SHEETS.vendaVer = {
+  html(s){
+    const v = S.vendas[s.id]; if(!v) return '';
+    const l = v.lancId ? S.lanc[v.lancId] : null;
+    return `${head('Venda')}
+    <div class="owe"><div><div class="lbl">${esc(v.cliente||'Cliente')}</div><div class="v num">${brl(v.valor)}</div>
+      <div style="margin-top:6px"><span class="pill ${v.pago?'ok':'soon'}">${v.pago?'pago':'no fiado'}</span> <span class="tiny">${fmtDate(v.data)}</span></div></div></div>
+    <div class="box ov">
+      <div class="ov-row"><span>Perfume</span><b>${v.qtd>1?v.qtd+'× ':''}${esc(v.nome)}</b></div>
+      <div class="ov-row"><span>Custo</span><b class="num">${brl((v.custo||0)*v.qtd)}</b></div>
+      <div class="ov-row tot"><span>Lucro</span><b class="num">${brl(v.valor-(v.custo||0)*v.qtd)}</b></div>
+    </div>
+    ${l ? `<p class="tiny" style="margin:0">Essa venda está no fiado de ${esc(S.pessoas[l.pessoaId]?.nome||v.cliente)}. Quando ele pagar, registre lá em Fiado → Recebi.</p>` : ''}
+    <button class="btn danger" id="vd-del">Apagar venda (volta pro estoque)</button>`;
+  },
+  wire(s){
+    const b = $('#vd-del'), v = S.vendas[s.id];
+    armDelete(b, v.lancId && S.lanc[v.lancId] ? 'Toque de novo: apaga a venda e o fiado dela' : 'Toque de novo pra apagar', async ()=>{
+      closeSheet();
+      const p = S.perfumes[v.perfumeId];
+      if(p) await put('perfumes', v.perfumeId, {...p, qtd:(p.qtd||0)+v.qtd});
+      if(v.lancId && S.lanc[v.lancId]) await del('lanc', v.lancId);
+      await del('vendas', s.id); toast('Venda apagada e estoque devolvido');
+    });
+  }
+};
+
 /* ---------- backup ---------- */
 const META = 'fiado-meta';
 const getMeta = () => { try{ return JSON.parse(localStorage.getItem(META)||'{}'); }catch(e){ return {}; } };
@@ -937,7 +1657,9 @@ function backupTexto(){
   const d = new Date(u); return `Último backup: ${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}.`;
 }
 async function exportar(){
-  const corpo = JSON.stringify({app:'fiado', versao:1, exportadoEm:new Date().toISOString(), pessoas:S.pessoas, lanc:S.lanc, config:S.config}, null, 2);
+  const dados = {app:'fiado', versao:2, exportadoEm:new Date().toISOString(), config:S.config};
+  KINDS.forEach(k=>dados[k]=S[k]);
+  const corpo = JSON.stringify(dados, null, 2);
   const nome = `fiado-backup-${today()}.json`;
   const file = new File([corpo], nome, {type:'application/json'});
   const toque = matchMedia('(pointer:coarse)').matches;
@@ -958,7 +1680,13 @@ function validarBackup(j){
     lanc[id] = {pessoaId:l.pessoaId, tipo:l.tipo, dir:l.dir==='pagar'?'pagar':'receber', valor:l.valor, desc:String(l.desc||'').slice(0,80), data:l.data, prometido:/^\d{4}-\d{2}-\d{2}$/.test(l.prometido||'')?l.prometido:null, criadoEm:+l.criadoEm||0};
   }
   const config = j.config && typeof j.config==='object' ? j.config : {};
-  return {pessoas, lanc, config, exportadoEm:j.exportadoEm};
+  const out = {pessoas, lanc, config, exportadoEm:j.exportadoEm};
+  // newer sections: rebuild each record from known fields only
+  for(const k of Object.keys(SANE)){
+    out[k] = {};
+    if(j[k] && typeof j[k]==='object') for(const [id,x] of Object.entries(j[k])) if(x && typeof x==='object') out[k][String(id).slice(0,80)] = SANE[k](x);
+  }
+  return out;
 }
 function importarHTML(s){
   const d = s.dados, np = Object.keys(d.pessoas).length, nl = Object.keys(d.lanc).length;
@@ -1095,7 +1823,7 @@ function wireChart(){
 }
 
 /* ---------- offline + atualização ---------- */
-const APP_VERSION = '4';
+const APP_VERSION = '5';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
