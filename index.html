@@ -294,6 +294,10 @@ details.day[open] summary{background:var(--surface-2)}
 
 /* Ajustes */
 .cfg-sec{display:flex;flex-direction:column;gap:12px;background:var(--surface);border-radius:18px;padding:16px}
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok,#2E9E5B);margin-left:6px;flex-shrink:0}
+.sdot[data-sync-dot=busy]{background:var(--soon,#D9A400)}
+.sdot[data-sync-dot=offline],.sdot[data-sync-dot=erro]{background:var(--late,#D33)}
+.sdot[data-sync-dot=off]{display:none}
 .cfg-sec h4{margin:0;font-family:var(--f-display);font-size:16px;font-weight:700;letter-spacing:-.01em}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
 .seg button{border:0;background:none;border-radius:9px;padding:9px 4px;font-size:13.5px;font-weight:500;color:var(--muted)}
@@ -411,7 +415,7 @@ KINDS.forEach(k=>S[k]={});
 let db = null;
 const LS = 'fiado-v1';
 function loadLocal(){ try{ const j = JSON.parse(localStorage.getItem(LS)||'{}'); KINDS.forEach(k=>S[k]=j[k]||{}); S.config=j.config||{}; }catch(e){} }
-function saveLocal(){ try{ const o = {config:S.config}; KINDS.forEach(k=>o[k]=S[k]); localStorage.setItem(LS, JSON.stringify(o)); }catch(e){ toast('Não deu pra salvar no aparelho.', true); } }
+function saveLocal(){ try{ const o = {config:S.config}; KINDS.forEach(k=>o[k]=S[k]); localStorage.setItem(LS, JSON.stringify(o)); }catch(e){ toast('Não deu pra salvar no aparelho.', true); } trackChanges(); }
 const COLL = { pessoas:'pessoas', lanc:'lancamentos' };
 
 async function put(kind, id, data){
@@ -431,7 +435,7 @@ async function del(kind, id){
 async function boot(){
   render();
   try{ db = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ db = null; }
-  if(!db){ loadLocal(); S.mode = 'local'; render(); return; }
+  if(!db){ loadLocal(); S.mode = 'local'; iniciarSync(); render(); return; }
   S.mode = 'loading';
   const pending = new Set(['p','l','c']);
   const timer = setTimeout(()=>{ if(pending.size){ S.slow = true; render(); } }, 10000);
@@ -545,7 +549,7 @@ let ui = { sheet:null, update:false, tab:lsGet('fiado-tab','lista'), lado:lsGet(
 function trocarLado(l){ if(ui.lado===l) return; ui.lado = l; try{ localStorage.setItem('fiado-lado', l); }catch(e){} window.scrollTo(0,0); render(); }
 function headerHTML(){ return `<header class="top">
     <div class="brand">${brandMark()}<span>${esc(txt('app'))}</span></div>
-    <button class="icon-btn" id="btn-cfg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Ajustes</button>
+    <button class="icon-btn" id="btn-cfg"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Ajustes${syncDot()}</button>
   </header>`; }
 const updHTML = () => ui.update ? `<div class="upd"><span>Tem versão nova do app. Seus dados continuam aqui.</span><button id="btn-upd">Atualizar app</button></div>` : '';
 function ensureFab(){ let fab = $('#fab'); if(!fab){ fab = document.createElement('button'); fab.id='fab'; fab.className='fab'; document.body.appendChild(fab); } return fab; }
@@ -872,6 +876,12 @@ function cfgHTML(){
     </section>
 
     <section class="cfg-sec">
+      <h4>Sincronizar aparelhos</h4>
+      <p class="tiny" style="margin:0;display:flex;gap:8px;align-items:center">${syncDot()}<span data-sync-txt>${esc(syncTexto())}</span></p>
+      <button type="button" class="btn ghost" id="cfg-sync">${syncOn() ? 'Ver sincronização' : 'Usar no celular e no PC juntos'}</button>
+    </section>
+
+    <section class="cfg-sec">
       <h4>Backup</h4>
       <p class="tiny" style="margin:0">${backupTexto()}</p>
       <div class="grid2">
@@ -1049,6 +1059,7 @@ function wire(s){
     };
     $('#bk-export').onclick = exportar;
     $('#cfg-upd').onclick = procurarUpdate;
+    $('#cfg-sync').onclick = ()=>{ ui.preview = null; $('#layer').dataset.key=''; openSheet({type:'sync'}); };
     $('#bk-file').onchange = async e=>{
       const f = e.target.files && e.target.files[0]; e.target.value = '';
       if(!f) return;
@@ -1745,6 +1756,7 @@ const getMeta = () => { try{ return JSON.parse(localStorage.getItem(META)||'{}')
 const setMeta = m => { try{ localStorage.setItem(META, JSON.stringify({...getMeta(), ...m})); }catch(e){} };
 function precisaBackup(){
   if(Object.keys(S.lanc).length < 3 || Object.values(S.pessoas).every(p=>p.exemplo)) return false;
+  if(syncOn() && getSync().ultimo) return false;   // the GitHub copy is the backup
   const u = getMeta().ultimoBackup; return !u || Date.now() - u > 30*864e5;
 }
 function backupTexto(){
@@ -1919,7 +1931,201 @@ function wireChart(){
 }
 
 /* ---------- offline + atualização ---------- */
-const APP_VERSION = '8';
+
+/* ---------- sync between devices (private GitHub repo) ----------
+   Each record ("kind/id", plus "config") carries a stamp {t, d?} in fiado-stamps.
+   saveLocal() diffs against the last snapshot to stamp whatever changed or was deleted,
+   so every way of changing data (put, del, restore, examples) is tracked the same way.
+   Sync = read dados.json from the repo, keep the newest version of each record, write back. */
+const SYNC = 'fiado-sync', STAMPS = 'fiado-stamps', SYNC_FILE = 'dados.json';
+let stamps = {}, snap = {}, syncRev = 0, syncBusy = false, syncAgain = false, syncTimer = null, syncLoop = null;
+const sync = { estado:'off', msg:'' };   // off | ok | busy | offline | erro
+const getSync = () => { try{ return JSON.parse(localStorage.getItem(SYNC)||'{}'); }catch(e){ return {}; } };
+const setSync = m => { try{ localStorage.setItem(SYNC, JSON.stringify({...getSync(), ...m})); }catch(e){} };
+const syncOn = () => { const c = getSync(); return !!(c.repo && c.token); };
+function recordsOf(state){
+  const out = {};
+  KINDS.forEach(k=>{ for(const [id,v] of Object.entries(state[k]||{})) out[k+'/'+id] = v; });
+  if(state.config && Object.keys(state.config).length) out.config = state.config;
+  return out;
+}
+function snapOf(state){ const o = {}; for(const [k,v] of Object.entries(recordsOf(state))) o[k] = JSON.stringify(v); return o; }
+function loadStamps(){ try{ stamps = JSON.parse(localStorage.getItem(STAMPS)||'{}'); }catch(e){ stamps = {}; } snap = snapOf(S); }
+function saveStamps(){ try{ localStorage.setItem(STAMPS, JSON.stringify(stamps)); }catch(e){} }
+// stamp everything that changed since the last snapshot; returns true when something did
+function trackChanges(){
+  const now = snapOf(S), t = Date.now(); let mudou = false;
+  for(const k in now) if(now[k] !== snap[k]){ stamps[k] = {t}; mudou = true; }
+  for(const k in snap) if(!(k in now)){ stamps[k] = {t, d:1}; mudou = true; }
+  snap = now;
+  if(mudou){ syncRev++; saveStamps(); if(syncOn()){ setSync({pendente:true}); agendarSync(2500); } }
+  return mudou;
+}
+// keep the newest version of every record; ties go to the side that has more in it
+function mesclar(a, b){
+  const ra = recordsOf(a.data), rb = recordsOf(b.data);
+  const data = {config:{}}; KINDS.forEach(k=>data[k]={});
+  const st = {};
+  const keys = new Set([...Object.keys(ra), ...Object.keys(rb), ...Object.keys(a.stamps||{}), ...Object.keys(b.stamps||{})]);
+  for(const key of keys){
+    const sa = (a.stamps||{})[key], sb = (b.stamps||{})[key];
+    const A = {v: sa&&sa.d ? undefined : ra[key], t: sa?+sa.t||0:0, d: !!(sa&&sa.d), s: sa};
+    const B = {v: sb&&sb.d ? undefined : rb[key], t: sb?+sb.t||0:0, d: !!(sb&&sb.d), s: sb};
+    let w;
+    if(A.t !== B.t) w = A.t > B.t ? A : B;
+    else {
+      const ja = A.v===undefined ? '' : JSON.stringify(A.v), jb = B.v===undefined ? '' : JSON.stringify(B.v);
+      w = ja.length !== jb.length ? (ja.length > jb.length ? A : B) : (ja >= jb ? A : B);
+    }
+    if(w.s) st[key] = w.d ? {t:w.t, d:1} : {t:w.t};
+    if(w.v === undefined) continue;
+    if(key === 'config') data.config = w.v;
+    else { const i = key.indexOf('/'), k = key.slice(0,i); if(data[k]) data[k][key.slice(i+1)] = w.v; }
+  }
+  return {data, stamps:st};
+}
+// stable text, so "nothing changed" compares equal on every device
+function canon(x){
+  const data = {config:x.data.config||{}};
+  KINDS.forEach(k=>{ data[k] = {}; Object.keys(x.data[k]||{}).sort().forEach(id=>data[k][id]=x.data[k][id]); });
+  const st = {}; Object.keys(x.stamps||{}).sort().forEach(k=>st[k]=x.stamps[k]);
+  return JSON.stringify({v:1, data, stamps:st});
+}
+const b64enc = str => { const b = new TextEncoder().encode(str); let s = ''; for(let i=0;i<b.length;i+=0x8000) s += String.fromCharCode.apply(null, b.subarray(i,i+0x8000)); return btoa(s); };
+const b64dec = s => { const bin = atob(s.replace(/\s/g,'')); const b = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return new TextDecoder().decode(b); };
+async function gh(path, opt={}, cfg){
+  const c = cfg || getSync();
+  const r = await fetch('https://api.github.com/repos/'+c.repo+path, {...opt, cache:'no-store', headers:{'Authorization':'Bearer '+c.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28', ...(opt.body?{'Content-Type':'application/json'}:{})}});
+  if(r.status===404 && opt.okMissing) return null;
+  if(!r.ok){ const e = new Error('gh '+r.status); e.status = r.status; throw e; }
+  return r.json();
+}
+function erroSync(e){
+  if(!navigator.onLine || e instanceof TypeError) return ['offline', 'Sem internet. Sincroniza sozinho quando voltar.'];
+  if(e.status===401) return ['erro', 'A chave do GitHub não vale mais (venceu ou foi apagada). Cole uma nova.'];
+  if(e.status===403) return ['erro', 'A chave não tem permissão pra gravar. Marque “Contents: Read and write”.'];
+  if(e.status===404) return ['erro', 'Não achei o repositório. Confira o nome e se a chave tem acesso a ele.'];
+  return ['erro', 'Não deu pra sincronizar agora. Tento de novo daqui a pouco.'];
+}
+function agendarSync(ms){ clearTimeout(syncTimer); syncTimer = setTimeout(()=>sincronizar(), ms); }
+async function sincronizar(manual){
+  if(!syncOn()) return;
+  if(syncBusy){ syncAgain = true; return; }
+  syncBusy = true; sync.estado = 'busy'; atualizarSyncUI();
+  try{
+    for(let tentativa=0; ; tentativa++){
+      trackChanges();
+      const c = getSync();
+      const lista = await gh('/contents/?t='+Date.now(), {okMissing:true}) || [];
+      const f = Array.isArray(lista) ? lista.find(x=>x.name===SYNC_FILE) : null;
+      if(f && f.sha===c.sha && !c.pendente && !manual) break;      // nothing new on either side
+      let remoto = {data:{}, stamps:{}};
+      if(f){ const blob = await gh('/git/blobs/'+f.sha); const j = JSON.parse(b64dec(blob.content)); remoto = {data:j.data||{}, stamps:j.stamps||{}}; }
+      // merge with what is on screen right now (synchronous from here to the local write)
+      trackChanges();
+      const rev = syncRev;
+      const local = {data:{config:S.config, ...Object.fromEntries(KINDS.map(k=>[k,S[k]]))}, stamps};
+      const m = mesclar(local, remoto);
+      const txt = canon(m);
+      if(canon(local) !== txt){
+        KINDS.forEach(k=>S[k]=m.data[k]); S.config = m.data.config;
+        stamps = m.stamps; saveStamps(); snap = snapOf(S);
+        try{ const o = {config:S.config}; KINDS.forEach(k=>o[k]=S[k]); localStorage.setItem(LS, JSON.stringify(o)); }catch(e){}
+        render();
+      }
+      let sha = f && f.sha;
+      if(!f || canon(remoto) !== txt){
+        try{
+          const r = await gh('/contents/'+SYNC_FILE, {method:'PUT', body:JSON.stringify({message:'Fiado '+new Date().toISOString().slice(0,16).replace('T',' '), content:b64enc(txt), ...(f?{sha:f.sha}:{})})});
+          sha = r.content.sha;
+        }catch(e){ if((e.status===409||e.status===422) && tentativa<3) continue; throw e; }   // the other device wrote in between: merge again
+      }
+      setSync({sha, pendente: syncRev!==rev, ultimo:Date.now()});
+      break;
+    }
+    sync.estado = 'ok'; sync.msg = '';
+    if(manual) toast('Sincronizado');
+  }catch(e){
+    [sync.estado, sync.msg] = erroSync(e);
+    if(manual) toast(sync.msg, true);
+    agendarSync(sync.estado==='offline' ? 15000 : 60000);
+  }finally{
+    syncBusy = false; atualizarSyncUI();
+    if(syncAgain){ syncAgain = false; agendarSync(500); }
+  }
+}
+function syncTexto(){
+  if(!syncOn()) return 'Desligada. Os dados ficam só neste aparelho.';
+  if(sync.estado==='busy') return 'Sincronizando…';
+  if(sync.estado==='offline' || sync.estado==='erro') return sync.msg;
+  const u = getSync().ultimo;
+  if(!u) return 'Ligada. Ainda não sincronizou.';
+  const min = Math.round((Date.now()-u)/60000);
+  return 'Sincronizado ' + (min<1 ? 'agora há pouco' : min<60 ? `há ${min} min` : 'em '+new Date(u).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})) + '.';
+}
+function atualizarSyncUI(){
+  document.querySelectorAll('[data-sync-txt]').forEach(el=>el.textContent = syncTexto());
+  document.querySelectorAll('[data-sync-dot]').forEach(el=>el.dataset.syncDot = syncOn() ? sync.estado : 'off');
+}
+function ligarLoopSync(){
+  if(syncLoop || !syncOn()) return;
+  syncLoop = setInterval(()=>{ if(document.visibilityState==='visible') sincronizar(); }, 30000);
+}
+function iniciarSync(){ loadStamps(); if(syncOn()){ sincronizar(); ligarLoopSync(); } }
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') sincronizar(); });
+addEventListener('online', ()=>sincronizar());
+setInterval(atualizarSyncUI, 30000);
+
+const syncDot = () => syncOn() ? `<span class="sdot" data-sync-dot="${sync.estado}" aria-hidden="true"></span>` : '';
+SHEETS.sync = {
+  html(){
+    const c = getSync(), on = syncOn();
+    return `${head('Sincronizar aparelhos')}
+    <div class="box" style="display:flex;gap:10px;align-items:flex-start;padding:14px;border-radius:16px;background:var(--surface)">
+      <span class="sdot" data-sync-dot="${on?sync.estado:'off'}" style="margin-top:6px" aria-hidden="true"></span>
+      <p style="margin:0" data-sync-txt>${esc(syncTexto())}</p>
+    </div>
+    ${on ? `
+      <p class="tiny" style="margin:0">Repositório: <b>${esc(c.repo)}</b>. Tudo o que você lança aqui vai pro seu GitHub e aparece nos outros aparelhos ligados no mesmo repositório, em até meio minuto.</p>
+      <button type="button" class="btn primary" id="sy-agora">Sincronizar agora</button>
+      <button type="button" class="btn ghost" id="sy-off">Desligar neste aparelho</button>
+      <p class="tiny" style="margin:0">Desligar não apaga nada: os dados continuam aqui e no GitHub.</p>`
+    : `
+      <p class="tiny" style="margin:0">Os dados ficam num repositório <b>privado</b> do seu GitHub (só você vê). Faça isso uma vez em cada aparelho, de dentro do app.</p>
+      <ol class="tiny" style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+        <li>No navegador deste aparelho, abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener" style="color:inherit;font-weight:700">github.com/settings/personal-access-tokens/new</a> (entre na sua conta se pedir).</li>
+        <li>Nome: <b>Fiado</b>. Expiração: a mais longa que tiver.</li>
+        <li>Em <b>Repository access</b>, escolha <b>Only select repositories</b> e marque <b>fiado-dados</b>.</li>
+        <li>Em <b>Permissions → Repository permissions</b>, ponha <b>Contents</b> em <b>Read and write</b>.</li>
+        <li>Toque em <b>Generate token</b>, copie e cole aqui embaixo.</li>
+      </ol>
+      <div class="field"><label for="sy-repo">Repositório</label><input class="inp" id="sy-repo" autocapitalize="off" autocorrect="off" spellcheck="false" value="${esc(c.repo||'Reinaldo-H-S/fiado-dados')}"></div>
+      <div class="field"><label for="sy-tok">Chave (token)</label><input class="inp" id="sy-tok" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…"></div>
+      <button type="button" class="btn primary" id="sy-on">Ligar sincronização</button>
+      <p class="tiny" style="margin:0">Na primeira vez, o que já está neste aparelho se junta com o que está no GitHub. Nada é apagado.</p>`}`;
+  },
+  wire(){
+    const b = id => document.getElementById(id);
+    if(b('sy-agora')) b('sy-agora').onclick = ()=>sincronizar(true);
+    if(b('sy-off')) b('sy-off').onclick = ()=>{ setSync({token:'', sha:null, pendente:false}); sync.estado = 'off'; clearInterval(syncLoop); syncLoop = null; toast('Sincronização desligada neste aparelho'); rerenderSheet(); };
+    if(b('sy-on')) b('sy-on').onclick = async ()=>{
+      const repo = b('sy-repo').value.trim().replace(/^https?:\/\/github\.com\//,'').replace(/\.git$|\/$/g,'');
+      const token = b('sy-tok').value.trim();
+      if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){ toast('Repositório no formato usuário/nome', true); return; }
+      if(token.length < 20){ toast('Cole a chave inteira', true); return; }
+      const btn = b('sy-on'); btn.disabled = true; btn.textContent = 'Conferindo…';
+      try{
+        const r = await gh('', {}, {repo, token});
+        if(r.permissions && !r.permissions.push){ const e = new Error(); e.status = 403; throw e; }
+        setSync({repo, token, sha:null, pendente:true, ultimo:null});
+        toast('Ligado! Juntando os dados…');
+        rerenderSheet(); ligarLoopSync(); await sincronizar(true);
+      }catch(e){ toast(erroSync(e)[1], true); btn.disabled = false; btn.textContent = 'Ligar sincronização'; }
+    };
+  }
+};
+
+const APP_VERSION = '9';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
