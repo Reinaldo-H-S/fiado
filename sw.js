@@ -1,7 +1,7 @@
 // Fiado — offline cache.
 // To ship an update: change the app files, bump VERSION, push. Open apps then show "Atualizar app".
 // Your data lives in localStorage and is never touched by updates.
-const VERSION = 'fiado-v14';
+const VERSION = 'fiado-v15';
 const SHELL = [
   './',
   './index.html',
@@ -9,6 +9,12 @@ const SHELL = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
+  './fonts/bricolage-latin.woff2',
+  './fonts/bricolage-latin-ext.woff2',
+  './fonts/inter-latin.woff2',
+  './fonts/inter-latin-ext.woff2',
+  './fonts/instrument-italic-latin.woff2',
+  './fonts/instrument-italic-latin-ext.woff2',
 ];
 
 self.addEventListener('install', e => {
