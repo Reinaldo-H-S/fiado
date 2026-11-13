@@ -1,7 +1,7 @@
 // Fiado — offline cache.
 // To ship an update: change the app files, bump VERSION, push. Open apps then show "Atualizar app".
 // Your data lives in localStorage and is never touched by updates.
-const VERSION = 'fiado-v5';
+const VERSION = 'fiado-v6';
 const SHELL = [
   './',
   './index.html',
