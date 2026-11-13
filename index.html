@@ -515,6 +515,71 @@ body{background:
 }
 @keyframes rise{from{opacity:0;transform:translateY(14px)}}
 
+/* ---------- v11: living mascot + moving hero background ---------- */
+.mascot{pointer-events:auto;cursor:pointer;overflow:visible;z-index:1;-webkit-tap-highlight-color:transparent}
+.mascot *{transform-box:fill-box;transform-origin:center}
+.mascot .m-body{transform-origin:50% 100%}
+.m-bill .m-spin{transform-origin:50% 0}
+.m-say{position:absolute;z-index:2;right:12px;top:12px;max-width:min(200px,56%);background:var(--surface);color:var(--ink);
+  border-radius:16px;padding:8px 12px;font-size:12.5px;font-weight:700;line-height:1.3;box-shadow:0 14px 30px -12px rgba(20,10,40,.45),0 0 0 1px var(--hair);
+  pointer-events:none;opacity:0;transform:translateY(8px) scale(.85);transform-origin:70% 100%;transition:opacity .25s,transform .35s var(--ease)}
+.m-say::after{content:"";position:absolute;right:42px;bottom:-6px;width:12px;height:12px;background:inherit;transform:rotate(45deg);border-radius:0 0 3px 0}
+.m-say.on{opacity:1;transform:none}
+.m-say:empty{display:none}
+.hero .fl{position:absolute;z-index:-1;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none}
+.hero .fl i{position:absolute;bottom:-28px;left:var(--x);width:var(--s);height:var(--s);border-radius:50%;border:2px solid currentColor;opacity:0}
+.hero .fl i::after{content:"";position:absolute;inset:28%;border-radius:inherit;background:currentColor;opacity:.5}
+.hero.pay .fl i{border-radius:3px;height:calc(var(--s)*1.3)}
+.hero.pay .fl i::after{inset:auto 22% 24%;height:2px;opacity:.7}
+.hero .shine{position:absolute;z-index:-1;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.hero .big{transform-origin:0 70%}
+@media (prefers-reduced-motion:no-preference){
+  .mascot{animation:none}
+  .mascot .m-body{animation:mBob 3.2s ease-in-out infinite}
+  .mascot .m-eyes{animation:mBlink 4.8s infinite}
+  .mascot .m-look{animation:mLook 7s ease-in-out infinite}
+  .m-coin .m-spin{animation:mSpin 10s ease-in-out 2s infinite}
+  .m-bill .m-spin{animation:mFlutter 2.6s ease-in-out infinite}
+  .mood-festa .m-body{animation:mHop 1s cubic-bezier(.3,0,.3,1) infinite}
+  .mood-festa .m-shadow{animation:mShadow 1s cubic-bezier(.3,0,.3,1) infinite}
+  .mood-feliz .m-body{animation:mBob 2.4s ease-in-out infinite}
+  .mood-preocupado .m-body{animation:mFret 2s ease-in-out infinite}
+  .mood-desesperado .m-body{animation:mShake .32s linear infinite}
+  .mood-desesperado .m-gasp{animation:mGasp 1.2s ease-in-out infinite}
+  .m-sweat{animation:mDrip 2.2s ease-in infinite}
+  .m-sweat.d2{animation-delay:1s}
+  .m-spark{animation:mTwinkle 1.6s ease-in-out infinite}
+  .m-spark.s2{animation-delay:.5s}.m-spark.s3{animation-delay:1s}
+  .mascot.poke .m-body{animation:mPoke .6s var(--ease)}
+  .hero .fl i{animation:flUp var(--d) linear var(--w) infinite}
+  .hero[data-mood=desesperado] .fl i{animation-duration:calc(var(--d)*.45)}
+  .hero[data-mood=festa] .fl i{animation-duration:calc(var(--d)*.6)}
+  .hero::before{animation:ringPulse 10s ease-in-out infinite}
+  .hero .shine::after{content:"";position:absolute;top:-40%;bottom:-40%;width:38%;left:-60%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.32),transparent);transform:skewX(-18deg);animation:shine 8s ease-in-out 1.5s infinite}
+  .hero .big.pop{animation:numPop .5s var(--ease)}
+  .hero .big.wig{animation:numWig .5s ease-in-out}
+}
+@keyframes mBob{50%{transform:translateY(-6px) rotate(-3deg)}}
+@keyframes mFret{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg) translateY(-2px)}75%{transform:rotate(4deg) translateY(-2px)}}
+@keyframes mHop{0%,100%{transform:translateY(0) scale(1.05,.95)}40%{transform:translateY(-14px) scale(.97,1.03) rotate(-6deg)}70%{transform:translateY(-4px) rotate(4deg)}}
+@keyframes mShadow{40%{transform:scale(.7);opacity:.6}}
+@keyframes mShake{25%{transform:translate(-1.6px,0) rotate(-2deg)}75%{transform:translate(1.6px,0) rotate(2deg)}}
+@keyframes mGasp{50%{transform:scale(1.15,1.25)}}
+@keyframes mBlink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes mLook{0%,30%,100%{transform:translate(0,0)}38%,52%{transform:translate(-3px,-2px)}60%,75%{transform:translate(2.5px,0)}}
+@keyframes mSpin{0%,84%,100%{transform:scaleX(1)}88%{transform:scaleX(.06)}92%{transform:scaleX(-1)}96%{transform:scaleX(.06)}}
+@keyframes mFlutter{50%{transform:skewX(-3deg) rotate(1.5deg)}}
+@keyframes mDrip{0%{transform:translateY(-4px) scale(.6);opacity:0}15%{opacity:1;transform:translateY(0) scale(1)}80%{opacity:1}100%{transform:translateY(18px);opacity:0}}
+@keyframes mTwinkle{0%,100%{transform:scale(.3) rotate(0);opacity:0}50%{transform:scale(1) rotate(90deg);opacity:1}}
+@keyframes mPoke{30%{transform:translateY(-18px) scale(1.08) rotate(10deg)}60%{transform:translateY(0) scale(1.06,.92)}80%{transform:scale(.97,1.03)}}
+@keyframes flUp{0%{transform:translateY(0) rotate(0);opacity:0}15%,80%{opacity:.16}100%{transform:translateY(-280px) rotate(var(--r));opacity:0}}
+@keyframes ringPulse{50%{transform:scale(1.14)}}
+@keyframes shine{0%{left:-60%}25%,100%{left:130%}}
+@keyframes numPop{40%{transform:scale(1.07)}}
+@keyframes numWig{20%{transform:rotate(-3deg)}50%{transform:rotate(2.5deg) scale(1.04)}80%{transform:rotate(-1deg)}}
+@media (min-width:1024px){.m-say{font-size:13.5px}}
+
 /* columns: invisible on phones, two columns on wide screens */
 .cols,.side,.main{display:contents}
 .nav-brand,.nav-foot{display:none}
@@ -693,28 +758,104 @@ function summary(pid, lado){
   return { items, saldo, total, abertas, oldest, prazo, status, sextas, late };
 }
 
-/* ---------- mascot: a coin that never comes back ---------- */
-const MASCOT = `<svg class="mascot" viewBox="0 0 120 120" aria-hidden="true">
-  <ellipse cx="62" cy="112" rx="34" ry="5" fill="rgba(27,36,0,.15)"/>
-  <circle cx="60" cy="62" r="42" fill="#F5B82E"/><circle cx="60" cy="62" r="42" fill="none" stroke="#C98A10" stroke-width="5"/>
-  <circle cx="60" cy="62" r="31" fill="none" stroke="#E3A11F" stroke-width="3" stroke-dasharray="4 5"/>
-  <ellipse cx="47" cy="58" rx="6" ry="8" fill="#1B2400"/><ellipse cx="73" cy="58" rx="6" ry="8" fill="#1B2400"/>
-  <circle cx="49" cy="55" r="2.2" fill="#fff"/><circle cx="75" cy="55" r="2.2" fill="#fff"/>
-  <path d="M50 78 q10 -7 20 0" fill="none" stroke="#1B2400" stroke-width="3.5" stroke-linecap="round"/>
-  <path d="M96 30 q6 10 0 14 q-6 -4 0 -14z" fill="#7CC7F2"/>
-  <ellipse cx="38" cy="72" rx="6" ry="3.5" fill="#F08A5D" opacity=".55"/><ellipse cx="82" cy="72" rx="6" ry="3.5" fill="#F08A5D" opacity=".55"/>
-</svg>`;
-/* a bill (boleto) that keeps coming back */
-const MASCOT_PAY = `<svg class="mascot" viewBox="0 0 120 120" aria-hidden="true">
-  <ellipse cx="60" cy="112" rx="32" ry="5" fill="rgba(0,0,0,.15)"/>
-  <path d="M28 18h64v86l-8-6-8 6-8-6-8 6-8-6-8 6-8-6-8 6z" fill="#FFFFFF" stroke="#2A1A12" stroke-width="3.5" stroke-linejoin="round"/>
-  <path d="M38 32h44M38 41h30" stroke="#2A1A12" stroke-width="3.5" stroke-linecap="round"/>
-  <path d="M38 84h4M45 84h2M50 84h5M58 84h2M63 84h6M72 84h3M78 84h4" stroke="#2A1A12" stroke-width="7"/>
-  <ellipse cx="49" cy="60" rx="5" ry="6.5" fill="#2A1A12"/><ellipse cx="71" cy="60" rx="5" ry="6.5" fill="#2A1A12"/>
-  <circle cx="50.5" cy="58" r="1.8" fill="#fff"/><circle cx="72.5" cy="58" r="1.8" fill="#fff"/>
-  <path d="M53 74 q7 -5 14 0" fill="none" stroke="#2A1A12" stroke-width="3" stroke-linecap="round"/>
-  <path d="M98 22 q6 10 0 14 q-6 -4 0 -14z" fill="#7CC7F2"/>
-</svg>`;
+/* ---------- v11: living mascot — its mood follows the total ---------- */
+const HUMORES = ['feliz','ok','preocupado','desesperado'];
+function humor(total, atrasados){
+  if(total<=0) return 'festa';
+  let i = total<=30000 ? 0 : total<=150000 ? 1 : total<=500000 ? 2 : 3;
+  if(atrasados) i = Math.min(3, i + (atrasados>=3 ? 2 : 1));
+  return HUMORES[i];
+}
+function rosto(mood, ex1, ex2, ey, my, ink){
+  const mx = (ex1+ex2)/2, aflito = mood==='desesperado', r = aflito ? 7 : 6;
+  const olhos = mood==='festa'
+    ? `<path d="M${ex1-6} ${ey+2} q6 -9 12 0M${ex2-6} ${ey+2} q6 -9 12 0" fill="none" stroke="${ink}" stroke-width="3.6" stroke-linecap="round"/>`
+    : `<g class="m-eyes"><ellipse cx="${ex1}" cy="${ey}" rx="${r}" ry="${r*1.35}" fill="${ink}"/><ellipse cx="${ex2}" cy="${ey}" rx="${r}" ry="${r*1.35}" fill="${ink}"/>
+       <g class="m-look"><circle cx="${ex1+2}" cy="${ey-3}" r="${aflito?1.6:2.3}" fill="#fff"/><circle cx="${ex2+2}" cy="${ey-3}" r="${aflito?1.6:2.3}" fill="#fff"/></g></g>`;
+  const dy = aflito ? 7 : 4;
+  const sobr = (mood==='preocupado'||aflito)
+    ? `<path d="M${ex1-8} ${ey-11} L${ex1+6} ${ey-11-dy}M${ex2-6} ${ey-11-dy} L${ex2+8} ${ey-11}" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>` : '';
+  const boca = {
+    festa: `<path d="M${mx-13} ${my-3} q13 18 26 0z" fill="${ink}"/><ellipse cx="${mx}" cy="${my+3}" rx="5" ry="2.4" fill="#F27A6B"/>`,
+    feliz: `<path d="M${mx-11} ${my-2} q11 11 22 0" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>`,
+    ok: `<path d="M${mx-9} ${my} q9 4 18 0" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>`,
+    preocupado: `<path d="M${mx-11} ${my+2} q5.5 -5 11 0 q5.5 5 11 0" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`,
+    desesperado: `<ellipse class="m-gasp" cx="${mx}" cy="${my+2}" rx="5.5" ry="7" fill="${ink}"/>`,
+  }[mood];
+  const boche = (mood==='festa'||mood==='feliz') ? `<ellipse cx="${ex1-9}" cy="${my-4}" rx="6" ry="3.5" fill="#F08A5D" opacity=".55"/><ellipse cx="${ex2+9}" cy="${my-4}" rx="6" ry="3.5" fill="#F08A5D" opacity=".55"/>` : '';
+  return boche + sobr + olhos + boca;
+}
+const estrela = (x, y, s, cls) => `<path class="m-spark ${cls}" d="M${x} ${y-s}L${x+s*.28} ${y-s*.28}L${x+s} ${y}L${x+s*.28} ${y+s*.28}L${x} ${y+s}L${x-s*.28} ${y+s*.28}L${x-s} ${y}L${x-s*.28} ${y-s*.28}Z" fill="#fff" stroke="#1B2400" stroke-width="1.4" stroke-linejoin="round"/>`;
+const gota = (x, y, cls='') => `<path class="m-sweat ${cls}" d="M${x} ${y} q6 10 0 14 q-6 -4 0 -14z" fill="#7CC7F2" stroke="#2C7FB0" stroke-width="1"/>`;
+function extrasHumor(mood){
+  if(mood==='festa') return estrela(16,30,7,'s1') + estrela(104,22,6,'s2') + estrela(108,70,5,'s3');
+  if(mood==='feliz') return estrela(104,24,6,'s1');
+  if(mood==='preocupado') return gota(98,26);
+  if(mood==='desesperado') return gota(98,24) + gota(20,34,'d2');
+  return '';
+}
+function mascote(pg, mood){
+  const corpo = pg
+    ? `<path d="M28 18h64v86l-8-6-8 6-8-6-8 6-8-6-8 6-8-6-8 6z" fill="#FFFFFF" stroke="#2A1A12" stroke-width="3.5" stroke-linejoin="round"/>
+       <path d="M38 28h44M38 36h30" stroke="#2A1A12" stroke-width="3.5" stroke-linecap="round"/>
+       <path d="M38 89h4M45 89h2M50 89h5M58 89h2M63 89h6M72 89h3M78 89h4" stroke="#2A1A12" stroke-width="6"/>
+       ${rosto(mood, 49, 71, 62, 75, '#2A1A12')}`
+    : `<circle cx="60" cy="62" r="42" fill="url(#mcg)"/><circle cx="60" cy="62" r="42" fill="none" stroke="#C98A10" stroke-width="5"/>
+       <circle cx="60" cy="62" r="31" fill="none" stroke="#E3A11F" stroke-width="3" stroke-dasharray="4 5"/>
+       <path d="M31 46a33 33 0 0 1 20-21" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" opacity=".6"/>
+       ${rosto(mood, 47, 73, 58, 76, '#1B2400')}`;
+  return `<svg class="mascot ${pg?'m-bill':'m-coin'} mood-${mood}" viewBox="0 0 120 120" role="img" aria-label="Mascote ${mood}">
+    <defs><radialGradient id="mcg" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFE38F"/><stop offset=".55" stop-color="#F5B82E"/><stop offset="1" stop-color="#DE9410"/></radialGradient></defs>
+    <ellipse class="m-shadow" cx="61" cy="112" rx="32" ry="5" fill="rgba(0,0,0,.16)"/>
+    <g class="m-body"><g class="m-spin">${corpo}</g>${extrasHumor(mood)}</g>
+  </svg>`;
+}
+const FALAS = {
+  receber:{ festa:['Ninguém te deve nada! 🎉','Tudo pago. Que paz!'], feliz:['Tá tranquilo, pouca coisa na rua.','Isso aí, quase tudo voltou!'],
+    ok:['Dá pra cobrar com calma.','{v} na rua. Fica de olho!'], preocupado:['Hmm… {v} na rua?','Bora cobrar esse povo?'],
+    desesperado:['{v}?! Socorro!','Manda essas cobranças já!'] },
+  pagar:{ festa:['Você não deve nada! 🎉','Zero contas. Que alívio!'], feliz:['Contas sob controle.','Tá leve, dá pra pagar.'],
+    ok:['{v} pra pagar. Tranquilo.','Nada que não dê pra pagar.'], preocupado:['Eita, {v} em contas…','Bora pagar uma por vez?'],
+    desesperado:['{v}?! Respira…','Uma conta de cada vez, combinado?'] },
+};
+function falar(mood, total){
+  const b = $('#m-say'); if(!b) return;
+  const op = FALAS[ui.lado==='pagar'?'pagar':'receber'][mood];
+  let i = Math.floor(Math.random()*op.length); if(op.length>1 && i===falar.last) i = (i+1)%op.length; falar.last = i;
+  b.textContent = op[i].replace('{v}', brl(total));
+  b.classList.remove('on'); void b.offsetWidth; b.classList.add('on');
+  clearTimeout(falar.t); falar.t = setTimeout(()=>b.classList.remove('on'), 3200);
+}
+const FL = [[6,14,10,0,120],[20,9,12,3,-90],[36,18,14,7,160],[55,11,11,1.5,-140],[70,16,13,5,100],[86,10,9,8,-60],[94,13,12,10,80]];
+const fundoVivo = () => `<div class="fl" aria-hidden="true">${FL.map(([x,s,d,w,r])=>`<i style="--x:${x}%;--s:${s}px;--d:${d}s;--w:-${w}s;--r:${r}deg"></i>`).join('')}</div><span class="shine" aria-hidden="true"></span>`;
+function contarValor(total){
+  const el = document.querySelector('#hero .big'); if(!el) return;
+  const k = ui.lado, shown = ui.shown || (ui.shown = {}), de = shown[k];
+  shown[k] = total;
+  if(de===total || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const ini = de==null ? 0 : de, t0 = performance.now(), dur = de==null ? 1000 : 700;
+  const put = v => { el.innerHTML = `<small>R$</small>${brlShort(v)}`; };
+  cancelAnimationFrame(contarValor.raf);
+  const step = now => {
+    const p = Math.min(1, (now-t0)/dur), e = 1-Math.pow(1-p, 3);
+    if(p<1){ put(Math.round((ini+(total-ini)*e)/100)*100); contarValor.raf = requestAnimationFrame(step); }
+    else { put(total); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+  };
+  put(ini); contarValor.raf = requestAnimationFrame(step);
+}
+function ligarMascote(mood, total){
+  const m = document.querySelector('#hero .mascot'); if(!m) return;
+  m.onclick = e => {
+    e.stopPropagation();
+    m.classList.remove('poke'); void m.getBoundingClientRect(); m.classList.add('poke');
+    clearTimeout(ligarMascote.t); ligarMascote.t = setTimeout(()=>m.classList.remove('poke'), 650);
+    const big = document.querySelector('#hero .big'); if(big){ big.classList.remove('wig'); void big.offsetWidth; big.classList.add('wig'); }
+    try{ navigator.vibrate?.(12); }catch(_){}
+    falar(mood, total);
+  };
+  const falou = ui.falou || (ui.falou = {}), chave = ui.lado+mood;
+  if(!falou[chave]){ falou[chave] = 1; clearTimeout(ligarMascote.f); ligarMascote.f = setTimeout(()=>falar(mood, total), 1300); }
+}
 const LOGO = `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4h12M4 4v13M4 10.5h8" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" fill="none"/></svg>`;
 
 /* ---------- look & texts (Ajustes) ---------- */
@@ -783,6 +924,7 @@ function render(){
   const atrasados = devendo.filter(p=>p.s.status.cls==='late').length;
   const temExemplo = ppl.some(p=>p.exemplo);
   const loading = S.mode==='loading';
+  const mood = humor(total, atrasados);
 
   applyLook(cfgNow());
   app.innerHTML = `
@@ -796,7 +938,7 @@ function render(){
     <button role="tab" data-lado="pagar" aria-selected="${pg}"><span>Eu devo</span><small class="num">${brl(pg ? total : outro)}</small></button>
   </div>
 
-  <section class="hero${pg?' pay':''}" id="hero" role="button" tabindex="0" aria-label="${pg?'Ver detalhes de quanto você deve':'Ver detalhes de quanto te devem'}">
+  <section class="hero${pg?' pay':''}" id="hero" data-mood="${mood}" role="button" tabindex="0" aria-label="${pg?'Ver detalhes de quanto você deve':'Ver detalhes de quanto te devem'}">
     <div class="lbl">${esc(T('banner'))}</div>
     <div class="big num">${loading ? '…' : `<small>R$</small>${brlShort(total)}`}</div>
     <div class="meta">
@@ -805,7 +947,9 @@ function render(){
       ${sextasTot && !pg ? `<span class="chip">${sextasTot} sextas furadas</span>` : ''}
     </div>
     ${devendo.length ? `<span class="more">ver por dia e por pessoa ›</span>` : ''}
-    ${pg ? MASCOT_PAY : MASCOT}
+    ${fundoVivo()}
+    ${mascote(pg, mood)}
+    <div class="m-say" id="m-say" aria-live="polite"></div>
   </section>
   </div><div class="main">
 
@@ -844,6 +988,7 @@ function render(){
   app.querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>openSheet({type:'pessoa', pid:b.dataset.pid}));
   const hero = $('#hero');
   if(hero && devendo.length){ hero.onclick = ()=>openSheet({type:'resumo'}); hero.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSheet({type:'resumo'}); } }; }
+  if(!loading){ contarValor(total); if(!ui.sheet) ligarMascote(mood, total); }
   app.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ ui.tab = b.dataset.tab; try{ localStorage.setItem('fiado-tab', ui.tab); }catch(e){} render(); });
   const bu = $('#btn-upd'); if(bu) bu.onclick = aplicarUpdate;
   wireChart();
@@ -1337,6 +1482,7 @@ const modHero = (k, lbl, val, chips='') => `<section class="hero mod" style="--m
     <div class="big num">${val<0?'<small>−R$</small>'+brlShort(-val):'<small>R$</small>'+brlShort(val)}</div>
     <div class="meta">${chips}</div>
     <div class="mod-ic">${icon(k, 104)}</div>
+    ${fundoVivo()}
   </section>`;
 const chip = t => `<span class="chip">${t}</span>`;
 function renderOutra(){
@@ -2351,7 +2497,7 @@ SHEETS.sync = {
   }
 };
 
-const APP_VERSION = '10';
+const APP_VERSION = '11';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
