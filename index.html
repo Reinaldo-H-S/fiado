@@ -28,6 +28,7 @@ body{-webkit-tap-highlight-color:transparent}
   --ink:#16141F; --muted:#6B6680; --line:#E3DFEF; --edge:transparent;
   --lime:#C9F03A; --lime-ink:#1B2400; --lime-soft:color-mix(in srgb,var(--lime) 32%,var(--surface));
   --brand:var(--lime); --brand-ink:var(--lime-ink); --btn:var(--ink); --btn-ink:var(--bg);
+  --pay:#FF9B85; --pay-ink:#2A1A12;
   --late:#E5484D; --late-soft:#FDE8E8; --soon:#B86E00; --soon-soft:#FFF1D6; --ok:#2F7D32;
   --shadow:0 1px 2px rgba(30,20,60,.06),0 8px 24px rgba(30,20,60,.06);
   --f-display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
@@ -134,6 +135,17 @@ html.locked,html.locked body{overflow:hidden}
 
 /* list surfaces get a hairline edge in dark mode */
 .list,.owe,.tl,.cfg-sec,.box{border:1px solid var(--edge)}
+
+/* "Me devem" / "Eu devo" switch */
+.lado{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:5px}
+.lado button{border:0;background:none;border-radius:13px;padding:9px 8px;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted)}
+.lado button span{font-family:var(--f-display);font-weight:700;font-size:15px}
+.lado button small{font-size:12px;font-weight:600}
+.lado button[data-lado="receber"][aria-selected="true"]{background:var(--lime);color:var(--lime-ink)}
+.lado button[data-lado="pagar"][aria-selected="true"]{background:var(--pay);color:var(--pay-ink)}
+.hero.pay{background:var(--pay);color:var(--pay-ink)}
+.btn.pay{background:var(--pay);color:var(--pay-ink)}
+.fab.pay .plus{background:var(--pay);color:var(--pay-ink)}
 
 /* hero opens the summary */
 .hero{cursor:pointer;-webkit-user-select:none;user-select:none}
@@ -346,8 +358,12 @@ async function boot(){
 }
 
 /* ---------- derived ---------- */
-function summary(pid){
-  const items = Object.entries(S.lanc).filter(([,l])=>l.pessoaId===pid).map(([id,l])=>({id,...l}));
+// Each entry belongs to one side: 'receber' (they owe you; the default for old data) or 'pagar' (you owe them).
+const ladoDe = l => l.dir==='pagar' ? 'pagar' : 'receber';
+const PAGAR = () => ui.lado==='pagar';
+function summary(pid, lado){
+  lado = lado || ui.lado;
+  const items = Object.entries(S.lanc).filter(([,l])=>l.pessoaId===pid && ladoDe(l)===lado).map(([id,l])=>({id,...l}));
   const dividas = items.filter(l=>l.tipo==='divida').sort((a,b)=>a.data.localeCompare(b.data) || (a.criadoEm||0)-(b.criadoEm||0));
   let pago = items.filter(l=>l.tipo==='pagamento').reduce((s,l)=>s+l.valor,0);
   const total = dividas.reduce((s,l)=>s+l.valor,0);
@@ -383,10 +399,24 @@ const MASCOT = `<svg class="mascot" viewBox="0 0 120 120" aria-hidden="true">
   <path d="M96 30 q6 10 0 14 q-6 -4 0 -14z" fill="#7CC7F2"/>
   <ellipse cx="38" cy="72" rx="6" ry="3.5" fill="#F08A5D" opacity=".55"/><ellipse cx="82" cy="72" rx="6" ry="3.5" fill="#F08A5D" opacity=".55"/>
 </svg>`;
+/* a bill (boleto) that keeps coming back */
+const MASCOT_PAY = `<svg class="mascot" viewBox="0 0 120 120" aria-hidden="true">
+  <ellipse cx="60" cy="112" rx="32" ry="5" fill="rgba(0,0,0,.15)"/>
+  <path d="M28 18h64v86l-8-6-8 6-8-6-8 6-8-6-8 6-8-6-8 6z" fill="#FFFFFF" stroke="#2A1A12" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M38 32h44M38 41h30" stroke="#2A1A12" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M38 84h4M45 84h2M50 84h5M58 84h2M63 84h6M72 84h3M78 84h4" stroke="#2A1A12" stroke-width="7"/>
+  <ellipse cx="49" cy="60" rx="5" ry="6.5" fill="#2A1A12"/><ellipse cx="71" cy="60" rx="5" ry="6.5" fill="#2A1A12"/>
+  <circle cx="50.5" cy="58" r="1.8" fill="#fff"/><circle cx="72.5" cy="58" r="1.8" fill="#fff"/>
+  <path d="M53 74 q7 -5 14 0" fill="none" stroke="#2A1A12" stroke-width="3" stroke-linecap="round"/>
+  <path d="M98 22 q6 10 0 14 q-6 -4 0 -14z" fill="#7CC7F2"/>
+</svg>`;
 const LOGO = `<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4h12M4 4v13M4 10.5h8" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" fill="none"/></svg>`;
 
 /* ---------- look & texts (Ajustes) ---------- */
-const DEF_TXT = { app:'Fiado', banner:'te devem', titulo:'quem *jurou* que pagava', botao:'Lançar fiado' };
+const DEF_TXT = { app:'Fiado', banner:'te devem', titulo:'quem *jurou* que pagava', botao:'Lançar fiado',
+  bannerP:'você deve', tituloP:'pra quem você *prometeu* pagar', botaoP:'Lançar conta' };
+// texts that change with the side: banner, titulo, botao
+const T = k => PAGAR() ? txt(k+'P') : txt(k);
 const DEF_BG = { light:'#F2F0FA', dark:'#0B0A0F' };
 const PRESETS = [
   {n:'Limão', c:'#C9F03A'}, {n:'Chiclete', c:'#FF8FC7'}, {n:'Piscina', c:'#5CD3F5'},
@@ -414,6 +444,7 @@ function applyLook(c){
   if(t==='auto') r.removeAttribute('data-mode'); else r.setAttribute('data-mode', t);
   const set = (k, v) => v ? st.setProperty(k, v) : st.removeProperty(k);
   set('--lime', cores.banner); set('--lime-ink', cores.banner && inkFor(cores.banner));
+  set('--pay', cores.bannerPagar); set('--pay-ink', cores.bannerPagar && inkFor(cores.bannerPagar));
   set('--brand', cores.icone); set('--brand-ink', cores.icone && inkFor(cores.icone));
   set('--btn', cores.botao); set('--btn-ink', cores.botao && inkFor(cores.botao));
   const bg = isDark(c) ? cores.fundoEscuro : cores.fundoClaro;
@@ -424,12 +455,16 @@ new MutationObserver(()=>applyLook(cfgNow())).observe(document.documentElement, 
 function brandMark(){ const ic = (cfgNow().icone||'').trim(); return `<span class="brand-mark">${ic ? esc(ic) : LOGO}</span>`; }
 
 /* ---------- render ---------- */
-let ui = { sheet:null, update:false, tab:(()=>{ try{ return localStorage.getItem('fiado-tab')||'lista'; }catch(e){ return 'lista'; } })() };
+const lsGet = (k, d) => { try{ return localStorage.getItem(k) || d; }catch(e){ return d; } };
+let ui = { sheet:null, update:false, tab:lsGet('fiado-tab','lista'), lado:lsGet('fiado-lado','receber') };
+function trocarLado(l){ if(ui.lado===l) return; ui.lado = l; try{ localStorage.setItem('fiado-lado', l); }catch(e){} window.scrollTo(0,0); render(); }
 function render(){
   const app = $('#app');
   const ppl = Object.entries(S.pessoas).map(([id,p])=>({id,...p, s:summary(id)}));
   const devendo = ppl.filter(p=>p.s.saldo>0).sort((a,b)=> b.s.late-a.s.late || b.s.saldo-a.s.saldo);
-  const quitados = ppl.filter(p=>p.s.saldo<=0).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const quitados = ppl.filter(p=>p.s.saldo<=0 && p.s.total>0).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const pg = PAGAR();
+  const outro = Object.keys(S.pessoas).reduce((s,id)=>s+summary(id, pg?'receber':'pagar').saldo, 0);
   const total = devendo.reduce((s,p)=>s+p.s.saldo,0);
   const sextasTot = devendo.reduce((s,p)=>s+p.s.sextas,0);
   const atrasados = devendo.filter(p=>p.s.status.cls==='late').length;
@@ -445,16 +480,21 @@ function render(){
 
   ${ui.update ? `<div class="upd"><span>Tem versão nova do app. Seus fiados continuam aqui.</span><button id="btn-upd">Atualizar app</button></div>` : ''}
 
-  <section class="hero" id="hero" role="button" tabindex="0" aria-label="Ver detalhes de quanto te devem">
-    <div class="lbl">${esc(txt('banner'))}</div>
+  <div class="lado" role="tablist" aria-label="Lado">
+    <button role="tab" data-lado="receber" aria-selected="${!pg}"><span>Me devem</span><small class="num">${brl(pg ? outro : total)}</small></button>
+    <button role="tab" data-lado="pagar" aria-selected="${pg}"><span>Eu devo</span><small class="num">${brl(pg ? total : outro)}</small></button>
+  </div>
+
+  <section class="hero${pg?' pay':''}" id="hero" role="button" tabindex="0" aria-label="${pg?'Ver detalhes de quanto você deve':'Ver detalhes de quanto te devem'}">
+    <div class="lbl">${esc(T('banner'))}</div>
     <div class="big num">${loading ? '…' : `<small>R$</small>${brlShort(total)}`}</div>
     <div class="meta">
       <span class="chip">${devendo.length} ${devendo.length===1?'pessoa':'pessoas'}</span>
       ${atrasados ? `<span class="chip">${atrasados} ${atrasados===1?'atrasado':'atrasados'}</span>` : ''}
-      ${sextasTot ? `<span class="chip">${sextasTot} sextas furadas</span>` : ''}
+      ${sextasTot && !pg ? `<span class="chip">${sextasTot} sextas furadas</span>` : ''}
     </div>
     ${devendo.length ? `<span class="more">ver por dia e por pessoa ›</span>` : ''}
-    ${MASCOT}
+    ${pg ? MASCOT_PAY : MASCOT}
   </section>
 
   ${devendo.length ? `<div class="tabs" role="tablist" aria-label="Visualização">
@@ -467,10 +507,11 @@ function render(){
   ${S.slow ? `<div class="banner"><span>Não consegui confirmar os dados agora. O que aparece pode estar desatualizado.</span></div>` : ''}
 
   ${ui.tab==='grafico' && devendo.length ? chartHTML(devendo, total) : `<section style="display:flex;flex-direction:column;gap:12px">
-    <div class="sec-h"><h2>${fancy(txt('titulo'))}</h2><span class="count">${devendo.length ? 'mais atrasado primeiro' : ''}</span></div>
+    <div class="sec-h"><h2>${fancy(T('titulo'))}</h2><span class="count">${devendo.length ? 'mais atrasado primeiro' : ''}</span></div>
     ${loading ? `<div class="empty"><b>Carregando seus fiados…</b></div>` :
       devendo.length ? `<div class="list">${devendo.map(rowHTML).join('')}</div>` :
-      `<div class="empty"><b>${quitados.length ? 'Ninguém te deve nada.' : 'Ninguém na lista ainda.'}</b><span>${quitados.length ? 'Milagre. Aproveita.' : 'Toque em “'+esc(txt('botao'))+'” e anote quem ficou de pagar sexta.'}</span>${ppl.length ? '' : '<button class="link-btn" id="btn-ex">ou veja como fica com exemplos</button>'}</div>`}
+      pg ? `<div class="empty"><b>${quitados.length ? 'Você não deve nada pra ninguém.' : 'Nenhuma conta sua anotada.'}</b><span>${quitados.length ? 'Nome limpo. Aproveita.' : 'Toque em “'+esc(T('botao'))+'” e anote o que você ficou de pagar e pra quem.'}</span></div>` :
+      `<div class="empty"><b>${quitados.length ? 'Ninguém te deve nada.' : 'Ninguém na lista ainda.'}</b><span>${quitados.length ? 'Milagre. Aproveita.' : 'Toque em “'+esc(T('botao'))+'” e anote quem ficou de pagar sexta.'}</span>${ppl.length ? '' : '<button class="link-btn" id="btn-ex">ou veja como fica com exemplos</button>'}</div>`}
   </section>
 
   ${quitados.length ? `<details class="paid"><summary>Quitados (${quitados.length}) ▾</summary><div class="list">${quitados.map(rowHTML).join('')}</div></details>` : ''}`}
@@ -480,7 +521,9 @@ function render(){
   // FAB
   let fab = $('#fab');
   if(!fab){ fab = document.createElement('button'); fab.id='fab'; fab.className='fab'; fab.onclick=()=>openSheet({type:'novo'}); document.body.appendChild(fab); }
-  fab.innerHTML = '<span class="plus">+</span>'+esc(txt('botao'));
+  fab.innerHTML = '<span class="plus">+</span>'+esc(T('botao'));
+  fab.classList.toggle('pay', pg);
+  app.querySelectorAll('[data-lado]').forEach(b=>b.onclick=()=>trocarLado(b.dataset.lado));
   fab.hidden = S.readOnly || loading || !!ui.sheet;
 
   document.documentElement.classList.toggle('locked', !!ui.sheet);
@@ -501,7 +544,7 @@ function rowHTML(p){
   const s = p.s;
   let sub;
   if(s.saldo<=0) sub = 'tudo pago';
-  else if(s.sextas>0) sub = `${s.sextas} ${s.sextas===1?'sexta':'sextas'} · ${esc(s.oldest?.desc||'')}`;
+  else if(s.sextas>0 && !PAGAR()) sub = `${s.sextas} ${s.sextas===1?'sexta':'sextas'} · ${esc(s.oldest?.desc||'')}`;
   else sub = esc(s.oldest?.desc || 'fiado');
   return `<button class="row" data-pid="${esc(p.id)}">
     ${avatar(p)}
@@ -554,52 +597,59 @@ function pchipsHTML(q){
   const lista = nq ? todas.filter(p=>norm(p.nome).includes(nq)) : todas;
   const exato = todas.some(p=>norm(p.nome)===nq);
   let html = lista.slice(0,20).map(p=>`<button type="button" class="pchip" data-nome="${esc(p.nome)}" aria-pressed="${norm(p.nome)===nq}">
-      ${avatar(p)}<span class="t"><span class="n">${esc(p.nome)}</span><small>${p.saldo>0?'deve '+brl(p.saldo):'em dia'}</small></span></button>`).join('');
+      ${avatar(p)}<span class="t"><span class="n">${esc(p.nome)}</span><small>${p.saldo>0?(PAGAR()?'você deve ':'deve ')+brl(p.saldo):'em dia'}</small></span></button>`).join('');
   if(nq && !exato) html += `<span class="pchip novo" aria-live="polite"><span class="plus-av">+</span><span class="t"><span class="n">${esc(q.trim())}</span><small>pessoa nova</small></span></span>`;
   return html;
 }
 function novoHTML(s){
   const pre = s.pid ? S.pessoas[s.pid]?.nome : '';
   const temGente = !s.pid && Object.keys(S.pessoas).length > 0;
-  return `${head(s.pid ? 'Mais um fiado' : 'Lançar fiado')}
+  const pg = PAGAR();
+  return `${head(pg ? (s.pid ? 'Mais uma conta' : 'Lançar conta') : (s.pid ? 'Mais um fiado' : 'Lançar fiado'))}
+  ${pg ? '<p class="tiny" style="margin:0">Algo que <b>você</b> precisa pagar pra alguém.</p>' : ''}
   <form id="f-novo" class="field" style="gap:14px" novalidate>
-    <div class="field"><label for="n-nome">Quem ficou devendo</label>
+    <div class="field"><label for="n-nome">${pg ? 'Pra quem você deve' : 'Quem ficou devendo'}</label>
       <input class="inp" id="n-nome" autocomplete="off" autocapitalize="words" placeholder="${temGente?'Escolha abaixo ou escreva um nome':'Ex.: Rafa'}" value="${esc(pre)}" ${s.pid?'readonly':''}>
       ${temGente ? `<div class="pchips" id="n-pchips" role="group" aria-label="Pessoas">${pchipsHTML('')}</div>` : ''}</div>
     <div class="field"><label for="n-valor">Quanto</label><div class="money"><span>R$</span><input id="n-valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
     <div class="field"><label for="n-desc">Do quê</label><input class="inp" id="n-desc" placeholder="Ex.: metade do Uber, ingresso do show" maxlength="80"></div>
     <div class="grid2">
       <div class="field"><label for="n-data">Quando</label><input class="inp" type="date" id="n-data" value="${today()}"></div>
-      <div class="field"><label for="n-prom">Jurou pagar em</label><input class="inp" type="date" id="n-prom" value="${nextFriday()}"></div>
+      <div class="field"><label for="n-prom">${pg ? 'Vou pagar em' : 'Jurou pagar em'}</label><input class="inp" type="date" id="n-prom" value="${nextFriday()}"></div>
     </div>
     <div class="chips" role="group" aria-label="Atalhos de prazo">
-      <button type="button" class="chipbtn" data-prom="${nextFriday()}" aria-pressed="true">“te pago sexta”</button>
+      <button type="button" class="chipbtn" data-prom="${nextFriday()}" aria-pressed="true">${pg ? 'sexta' : '“te pago sexta”'}</button>
       <button type="button" class="chipbtn" data-prom="${addDays(today(),1)}">amanhã</button>
       <button type="button" class="chipbtn" data-prom="${endOfMonth()}">quando o salário cair</button>
       <button type="button" class="chipbtn" data-prom="">sem prazo</button>
     </div>
     <div class="err" id="n-err"></div>
-    <button class="btn primary" type="submit">Anotar fiado</button>
+    <button class="btn primary" type="submit">${pg ? 'Anotar conta' : 'Anotar fiado'}</button>
   </form>`;
 }
 function pessoaHTML(s){
-  const p = {id:s.pid, ...S.pessoas[s.pid]}, sm = summary(s.pid);
+  const p = {id:s.pid, ...S.pessoas[s.pid]}, sm = summary(s.pid), pg = PAGAR();
   const items = sm.items.slice().sort((a,b)=>b.data.localeCompare(a.data) || (b.criadoEm||0)-(a.criadoEm||0));
   const ro = S.readOnly;
+  const outro = summary(s.pid, pg?'receber':'pagar').saldo;
   return `<div class="sheet-h"><div class="p-head">${avatar(p)}<div><div class="nm">${esc(p.nome)}</div><div class="tiny">${p.telefone?esc(p.telefone):'sem WhatsApp salvo'}</div></div></div><button class="x" data-close aria-label="Fechar">×</button></div>
-  <div class="owe">
-    <div><div class="lbl">${sm.saldo>0?'te deve':'situação'}</div><div class="v num">${sm.saldo>0?brl(sm.saldo):'Quitado'}</div>
-      <div style="margin-top:6px"><span class="pill ${sm.status.cls}">${sm.status.txt}</span>${sm.prazo&&sm.saldo>0?` <span class="tiny">prometeu ${fmtDate(sm.prazo)}</span>`:''}</div></div>
-    ${sm.saldo>0?`<div class="sextas"><div class="n num">${sm.sextas}</div><div class="t">${sm.sextas===1?'sexta':'sextas'} desde<br>o 1º fiado aberto</div></div>`:''}
+  <div class="owe${pg?' pay':''}">
+    <div><div class="lbl">${sm.saldo>0?(pg?'você deve':'te deve'):'situação'}</div><div class="v num">${sm.saldo>0?brl(sm.saldo):'Quitado'}</div>
+      <div style="margin-top:6px"><span class="pill ${sm.status.cls}">${sm.status.txt}</span>${sm.prazo&&sm.saldo>0?` <span class="tiny">${pg?'você prometeu':'prometeu'} ${fmtDate(sm.prazo)}</span>`:''}</div></div>
+    ${sm.saldo>0 && !pg?`<div class="sextas"><div class="n num">${sm.sextas}</div><div class="t">${sm.sextas===1?'sexta':'sextas'} desde<br>o 1º fiado aberto</div></div>`:''}
   </div>
-  ${ro?'':`<div class="actions">
+  ${outro>0 ? `<button class="banner" id="p-outro" style="width:100%;text-align:left;cursor:pointer"><span>${pg ? `E ${esc(p.nome)} também <b>te deve ${brl(outro)}</b>.` : `E você também <b>deve ${brl(outro)}</b> pra ${esc(p.nome)}.`}</span><span class="link-btn">ver ›</span></button>` : ''}
+  ${ro?'':(pg ? `<div class="actions" style="grid-template-columns:1fr 1fr">
+    <button class="btn pay" id="a-pagar" ${sm.saldo>0?'':'disabled'}><b>✓</b>Paguei</button>
+    <button class="btn ghost" id="a-mais"><b>+</b>Conta</button>
+  </div>` : `<div class="actions">
     <button class="btn lime" id="a-cobrar" ${sm.saldo>0?'':'disabled'}><b>📣</b>Cobrar</button>
     <button class="btn ghost" id="a-pagar" ${sm.saldo>0?'':'disabled'}><b>✓</b>Recebi</button>
     <button class="btn ghost" id="a-mais"><b>+</b>Fiado</button>
-  </div>`}
+  </div>`)}
   <div class="sec-h"><h2 style="font-size:18px">histórico</h2><span class="count">${items.length} ${items.length===1?'lançamento':'lançamentos'}</span></div>
   <div class="tl">${items.map(l=>`<div class="tl-item">
-      <div style="min-width:0"><div class="d">${l.tipo==='pagamento'?'Pagou':esc(l.desc||'Fiado')}</div><div class="s">${fmtDate(l.data)}${l.tipo==='divida'&&l.prometido?` · jurou pra ${fmtShort(l.prometido)}`:''}</div></div>
+      <div style="min-width:0"><div class="d">${l.tipo==='pagamento'?(pg?'Você pagou':'Pagou'):esc(l.desc||(pg?'Conta':'Fiado'))}</div><div class="s">${fmtDate(l.data)}${l.tipo==='divida'&&l.prometido?` · ${pg?'prometi':'jurou'} pra ${fmtShort(l.prometido)}`:''}</div></div>
       <div class="v num ${l.tipo==='pagamento'?'in':''}">${l.tipo==='pagamento'?'− ':''}${brl(l.valor)}</div>
       ${ro?'<span></span>':`<button class="del" data-del="${esc(l.id)}" aria-label="Apagar lançamento">apagar</button>`}
     </div>`).join('') || '<div class="tl-item"><span class="tiny">Nada lançado.</span></div>'}</div>
@@ -607,14 +657,14 @@ function pessoaHTML(s){
   <button class="btn danger" id="p-del">${s.armed?'Toque de novo para apagar '+esc(p.nome)+' e todo o histórico':'Apagar pessoa'}</button>`}`;
 }
 function pagarHTML(s){
-  const p = S.pessoas[s.pid], sm = summary(s.pid);
-  return `${head('Recebi de '+esc(p.nome))}
+  const p = S.pessoas[s.pid], sm = summary(s.pid), pg = PAGAR();
+  return `${head((pg?'Paguei ':'Recebi de ')+esc(p.nome))}
   <form id="f-pagar" class="field" style="gap:14px" novalidate>
-    <div class="field"><label for="g-valor">Quanto caiu</label><div class="money"><span>R$</span><input id="g-valor" inputmode="decimal" value="${brlShort(sm.saldo)}"></div></div>
+    <div class="field"><label for="g-valor">${pg?'Quanto você pagou':'Quanto caiu'}</label><div class="money"><span>R$</span><input id="g-valor" inputmode="decimal" value="${brlShort(sm.saldo)}"></div></div>
     <div class="chips"><button type="button" class="chipbtn" data-v="${sm.saldo}" aria-pressed="true">tudo (${brl(sm.saldo)})</button>${sm.saldo>=2?`<button type="button" class="chipbtn" data-v="${Math.round(sm.saldo/2)}">metade</button>`:''}</div>
     <div class="field"><label for="g-data">Quando</label><input class="inp" type="date" id="g-data" value="${today()}"></div>
     <div class="err" id="g-err"></div>
-    <button class="btn lime" type="submit">Registrar pagamento</button>
+    <button class="btn ${pg?'pay':'lime'}" type="submit">Registrar pagamento</button>
   </form>`;
 }
 const TONS = [
@@ -649,6 +699,7 @@ function cobrarHTML(s){
 }
 const COLOR_FIELDS = [
   {k:'banner', t:'Banner', d:'o cartão do “te devem”', def:'#C9F03A'},
+  {k:'bannerPagar', t:'Banner do “Eu devo”', d:'o cartão do “você deve”', def:'#FF9B85'},
   {k:'icone', t:'Ícone', d:'o quadradinho do logo', def:'#C9F03A'},
   {k:'botao', t:'Botão principal', d:'o botão de lançar e os de salvar', def:'#16141F'},
   {k:'fundoClaro', t:'Fundo no modo claro', d:'a cor atrás de tudo', def:DEF_BG.light},
@@ -659,6 +710,9 @@ const TEXT_FIELDS = [
   {k:'banner', t:'Texto do banner', max:30},
   {k:'titulo', t:'Título da lista', max:48, d:'Ponha uma palavra entre *asteriscos* pra ela ficar em itálico.'},
   {k:'botao', t:'Texto do botão de lançar', max:24},
+  {k:'bannerP', t:'Texto do banner em “Eu devo”', max:30},
+  {k:'tituloP', t:'Título da lista em “Eu devo”', max:48},
+  {k:'botaoP', t:'Botão de lançar em “Eu devo”', max:24},
 ];
 function cfgHTML(){
   const c = S.config, cores = c.cores||{}, textos = c.textos||{}, tema = c.tema||'auto';
@@ -758,11 +812,11 @@ function wire(s){
       e.preventDefault();
       const nome = $('#n-nome').value.trim(), valor = toCents($('#n-valor').value), data = $('#n-data').value || today();
       const err = $('#n-err');
-      if(!nome) return err.textContent='Escreve o nome de quem tá devendo.';
+      if(!nome) return err.textContent = PAGAR() ? 'Escreve pra quem você deve.' : 'Escreve o nome de quem tá devendo.';
       if(!(valor>0)) return err.textContent='Coloca um valor maior que zero, tipo 45,90.';
       let pid = s.pid || Object.entries(S.pessoas).find(([,p])=>p.nome.trim().toLowerCase()===nome.toLowerCase())?.[0];
       if(!pid){ pid = 'p-'+uid(); await put('pessoas', pid, {nome, telefone:'', criadoEm:Date.now()}); }
-      await put('lanc', 'l-'+uid(), {pessoaId:pid, tipo:'divida', valor, desc:$('#n-desc').value.trim(), data, prometido:prom.value||null, criadoEm:Date.now()});
+      await put('lanc', 'l-'+uid(), {pessoaId:pid, tipo:'divida', dir:ui.lado, valor, desc:$('#n-desc').value.trim(), data, prometido:prom.value||null, criadoEm:Date.now()});
       toast(`Anotado: ${nome} · ${brl(valor)}`);
       ui.sheet = {type:'pessoa', pid}; $('#layer').dataset.key=''; render();
     };
@@ -776,6 +830,7 @@ function wire(s){
       if(x.classList.contains('armed')) del('lanc', x.dataset.del);
       else { x.classList.add('armed'); x.textContent='confirmar'; setTimeout(()=>{ if(x.isConnected){ x.classList.remove('armed'); x.textContent='apagar'; } }, 3000); }
     });
+    if(b('p-outro')) b('p-outro').onclick = ()=>{ ui.lado = PAGAR() ? 'receber' : 'pagar'; try{ localStorage.setItem('fiado-lado', ui.lado); }catch(e){} $('#layer').dataset.key=''; render(); };
     const tel = b('p-tel');
     if(tel) tel.onchange = ()=>{ const p = S.pessoas[s.pid]; if((p.telefone||'')!==tel.value.trim()) put('pessoas', s.pid, {...p, telefone:tel.value.trim()}); };
     if(b('p-del')) b('p-del').onclick = async ()=>{
@@ -795,8 +850,8 @@ function wire(s){
       e.preventDefault();
       const valor = toCents(v.value);
       if(!(valor>0)) return $('#g-err').textContent='Coloca quanto caiu, tipo 80 ou 45,50.';
-      await put('lanc', 'l-'+uid(), {pessoaId:s.pid, tipo:'pagamento', valor, desc:'', data:$('#g-data').value||today(), criadoEm:Date.now()});
-      toast('pix recebido + '+brl(valor));
+      await put('lanc', 'l-'+uid(), {pessoaId:s.pid, tipo:'pagamento', dir:ui.lado, valor, desc:'', data:$('#g-data').value||today(), criadoEm:Date.now()});
+      toast(PAGAR() ? 'pago − '+brl(valor) : 'pix recebido + '+brl(valor));
       $('#layer').dataset.key=''; openSheet({type:'pessoa', pid:s.pid});
     };
   }
@@ -900,7 +955,7 @@ function validarBackup(j){
   for(const [id,p] of Object.entries(j.pessoas)){ if(p && typeof p.nome==='string') pessoas[id] = {nome:p.nome.slice(0,80), telefone:String(p.telefone||'').slice(0,30), exemplo:!!p.exemplo, criadoEm:+p.criadoEm||0}; }
   for(const [id,l] of Object.entries(j.lanc)){
     if(!l || !pessoas[l.pessoaId] || !['divida','pagamento'].includes(l.tipo) || !(Number.isInteger(l.valor) && l.valor>0) || !/^\d{4}-\d{2}-\d{2}$/.test(l.data||'')) continue;
-    lanc[id] = {pessoaId:l.pessoaId, tipo:l.tipo, valor:l.valor, desc:String(l.desc||'').slice(0,80), data:l.data, prometido:/^\d{4}-\d{2}-\d{2}$/.test(l.prometido||'')?l.prometido:null, criadoEm:+l.criadoEm||0};
+    lanc[id] = {pessoaId:l.pessoaId, tipo:l.tipo, dir:l.dir==='pagar'?'pagar':'receber', valor:l.valor, desc:String(l.desc||'').slice(0,80), data:l.data, prometido:/^\d{4}-\d{2}-\d{2}$/.test(l.prometido||'')?l.prometido:null, criadoEm:+l.criadoEm||0};
   }
   const config = j.config && typeof j.config==='object' ? j.config : {};
   return {pessoas, lanc, config, exportadoEm:j.exportadoEm};
@@ -926,8 +981,10 @@ function carregarExemplos(){
     ['p-ex-leo','divida',8000,'rodízio',addDays(t,-20),addDays(t,1)],
     ['p-ex-bia','divida',12000,'presente da Ju',addDays(t,-12),addDays(t,-6)],
     ['p-ex-bia','pagamento',12000,'',addDays(t,-7),null],
+    ['p-ex-bia','divida',6000,'pizza de sexta',addDays(t,-2),addDays(t,3),'pagar'],
+    ['p-ex-leo','divida',4500,'ingresso do cinema',addDays(t,-9),addDays(t,-1),'pagar'],
   ];
-  L.forEach(([pessoaId,tipo,valor,desc,data,prometido],i)=>{ S.lanc['l-ex-'+i] = {pessoaId,tipo,valor,desc,data,prometido,criadoEm:now+i}; });
+  L.forEach(([pessoaId,tipo,valor,desc,data,prometido,dir],i)=>{ S.lanc['l-ex-'+i] = {pessoaId,tipo,dir:dir||'receber',valor,desc,data,prometido,criadoEm:now+i}; });
   saveLocal(); render();
 }
 
@@ -975,13 +1032,13 @@ function resumoHTML(){
       <button class="open-p" data-open="${esc(p.id)}">Abrir ${esc(p.nome)} pra cobrar ou dar baixa ›</button>
     </details>`;
   const total = ab.reduce((s,a)=>s+a.resta,0);
-  return `${head(esc(txt('banner'))+' '+brl(total))}
+  return `${head(esc(T('banner'))+' '+brl(total))}
   <div class="kpis">
     <div class="kpi late"><div class="k">Atrasado</div><div class="v num">${brl(atrasado)}</div></div>
     <div class="kpi"><div class="k">Próx. 7 dias</div><div class="v num">${brl(semana)}</div></div>
     <div class="kpi"><div class="k">Sem prazo</div><div class="v num">${brl(semPrazo)}</div></div>
   </div>
-  <div class="sec-h"><h2 style="font-size:18px">a receber por dia</h2><span class="count">toque no dia pra ver quem</span></div>
+  <div class="sec-h"><h2 style="font-size:18px">${PAGAR() ? 'a pagar por dia' : 'a receber por dia'}</h2><span class="count">toque no dia pra ver quem</span></div>
   <div class="box">${chaves.map(dayHTML).join('') || '<p class="tiny" style="padding:14px;margin:0">Nada em aberto.</p>'}</div>
   <div class="sec-h"><h2 style="font-size:18px">por pessoa</h2><span class="count">${ppl.length} ${ppl.length===1?'pessoa':'pessoas'}</span></div>
   <div class="box">${ppl.map(personHTML).join('')}</div>`;
@@ -1011,7 +1068,7 @@ function chartHTML(devendo, total){
   if(fatias.length===1) paths = `<circle cx="100" cy="100" r="76" fill="none" stroke="${fatias[0].cor}" stroke-width="40" data-i="0"/>`;
   else fatias.forEach((f,i)=>{ const a1 = a + f.pct*2*Math.PI; paths += `<path d="${arcPath(100,100,56,96,a,a1)}" fill="${f.cor}" stroke="var(--surface)" stroke-width="2" stroke-linejoin="round" data-i="${i}"><title>${esc(f.nome)}: ${brl(f.v)}</title></path>`; a = a1; });
   return `<section class="chart-card" aria-label="Quanto cada pessoa deve">
-    <div class="sec-h"><h2 style="font-size:20px">quem deve <em class="acc">quanto</em></h2><span class="count">toque numa fatia</span></div>
+    <div class="sec-h"><h2 style="font-size:20px">${PAGAR() ? 'pra quem você <em class="acc">deve</em>' : 'quem deve <em class="acc">quanto</em>'}</h2><span class="count">toque numa fatia</span></div>
     <div class="donut-wrap" id="donut"><svg viewBox="0 0 200 200" role="img" aria-label="Gráfico de pizza com o valor que cada pessoa deve">${paths}</svg>
       <div class="donut-c"><div class="k" id="dc-k">total</div><div class="v num" id="dc-v">${brl(total)}</div><div class="p" id="dc-p">${devendo.length} ${devendo.length===1?'pessoa':'pessoas'}</div></div></div>
     <div class="legend">${fatias.map((f,i)=>`<button class="lg" data-i="${i}" aria-pressed="false"><i style="background:${f.cor}"></i><span class="n">${esc(f.nome)}</span><span class="v num">${brl(f.v)}</span><span class="p num">${Math.round(f.pct*100)}%</span></button>`).join('')}</div>
@@ -1038,7 +1095,7 @@ function wireChart(){
 }
 
 /* ---------- offline + atualização ---------- */
-const APP_VERSION = '3';
+const APP_VERSION = '4';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
