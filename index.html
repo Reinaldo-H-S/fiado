@@ -211,6 +211,16 @@ details.day[open] summary{background:var(--surface-2)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chipbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:500}
 .chipbtn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pchips{display:flex;gap:8px;overflow-x:auto;margin-inline:-18px;padding:2px 18px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;scroll-padding-inline:18px}
+.pchips::-webkit-scrollbar{display:none}
+.pchip{flex:none;scroll-snap-align:start;display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);background:var(--surface);border-radius:16px;padding:7px 12px 7px 7px;text-align:left;color:var(--ink)}
+.pchip .av{width:32px;height:32px;font-size:14px}
+.pchip .t{display:flex;flex-direction:column;line-height:1.2}
+.pchip .n{font-weight:600;font-size:14px;white-space:nowrap;max-width:9em;overflow:hidden;text-overflow:ellipsis}
+.pchip small{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.pchip[aria-pressed="true"]{border-color:var(--ink);background:var(--surface-2);box-shadow:0 0 0 1.5px var(--ink)}
+.pchip.novo{border-style:dashed}
+.pchip .plus-av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--lime);color:var(--lime-ink);font-weight:800;font-size:18px}
 .btn{border:0;border-radius:14px;padding:14px 18px;font-weight:600;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
 .btn.primary{background:var(--btn);color:var(--btn-ink)}
 
@@ -529,14 +539,33 @@ const sheetKey = s => s.type+':'+(s.pid||'');
 
 function head(title){ return `<div class="sheet-h"><h3>${title}</h3><button class="x" data-close aria-label="Fechar">×</button></div>`; }
 
+/* people cards under "Quem ficou devendo": who owes you first, then most recent */
+const norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+function pessoasOrdenadas(){
+  return Object.entries(S.pessoas).map(([id,p])=>{
+    const sm = summary(id);
+    const ult = sm.items.reduce((m,l)=>l.data>m?l.data:m, '');
+    return {id, ...p, saldo:sm.saldo, ult};
+  }).sort((a,b)=> (b.saldo>0)-(a.saldo>0) || b.ult.localeCompare(a.ult) || a.nome.localeCompare(b.nome));
+}
+function pchipsHTML(q){
+  const nq = norm(q);
+  const todas = pessoasOrdenadas();
+  const lista = nq ? todas.filter(p=>norm(p.nome).includes(nq)) : todas;
+  const exato = todas.some(p=>norm(p.nome)===nq);
+  let html = lista.slice(0,20).map(p=>`<button type="button" class="pchip" data-nome="${esc(p.nome)}" aria-pressed="${norm(p.nome)===nq}">
+      ${avatar(p)}<span class="t"><span class="n">${esc(p.nome)}</span><small>${p.saldo>0?'deve '+brl(p.saldo):'em dia'}</small></span></button>`).join('');
+  if(nq && !exato) html += `<span class="pchip novo" aria-live="polite"><span class="plus-av">+</span><span class="t"><span class="n">${esc(q.trim())}</span><small>pessoa nova</small></span></span>`;
+  return html;
+}
 function novoHTML(s){
-  const nomes = Object.values(S.pessoas).map(p=>p.nome);
   const pre = s.pid ? S.pessoas[s.pid]?.nome : '';
+  const temGente = !s.pid && Object.keys(S.pessoas).length > 0;
   return `${head(s.pid ? 'Mais um fiado' : 'Lançar fiado')}
   <form id="f-novo" class="field" style="gap:14px" novalidate>
     <div class="field"><label for="n-nome">Quem ficou devendo</label>
-      <input class="inp" id="n-nome" list="dl-nomes" autocomplete="off" placeholder="Ex.: Rafa" value="${esc(pre)}" ${s.pid?'readonly':''}>
-      <datalist id="dl-nomes">${nomes.map(n=>`<option value="${esc(n)}">`).join('')}</datalist></div>
+      <input class="inp" id="n-nome" autocomplete="off" autocapitalize="words" placeholder="${temGente?'Escolha abaixo ou escreva um nome':'Ex.: Rafa'}" value="${esc(pre)}" ${s.pid?'readonly':''}>
+      ${temGente ? `<div class="pchips" id="n-pchips" role="group" aria-label="Pessoas">${pchipsHTML('')}</div>` : ''}</div>
     <div class="field"><label for="n-valor">Quanto</label><div class="money"><span>R$</span><input id="n-valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></div></div>
     <div class="field"><label for="n-desc">Do quê</label><input class="inp" id="n-desc" placeholder="Ex.: metade do Uber, ingresso do show" maxlength="80"></div>
     <div class="grid2">
@@ -712,7 +741,19 @@ function wire(s){
     const prom = $('#n-prom');
     document.querySelectorAll('[data-prom]').forEach(b=>b.onclick=()=>{ prom.value=b.dataset.prom; document.querySelectorAll('[data-prom]').forEach(x=>x.setAttribute('aria-pressed', x===b)); });
     prom.oninput = ()=>document.querySelectorAll('[data-prom]').forEach(x=>x.setAttribute('aria-pressed', x.dataset.prom===prom.value));
-    if(!s.pid) setTimeout(()=>$('#n-nome')?.focus(),50); else setTimeout(()=>$('#n-valor')?.focus(),50);
+    const nomeInp = $('#n-nome'), box = $('#n-pchips');
+    if(box){
+      const wireChips = () => box.querySelectorAll('[data-nome]').forEach(b=>b.onclick=()=>{
+        nomeInp.value = b.dataset.nome;
+        box.innerHTML = pchipsHTML(nomeInp.value); wireChips();
+        $('#n-err').textContent = '';
+        $('#n-valor').focus();
+      });
+      wireChips();
+      nomeInp.oninput = ()=>{ box.innerHTML = pchipsHTML(nomeInp.value); box.scrollLeft = 0; wireChips(); };
+    }
+    if(s.pid) setTimeout(()=>$('#n-valor')?.focus(),50);
+    else if(!box) setTimeout(()=>nomeInp?.focus(),50);
     $('#f-novo').onsubmit = async e=>{
       e.preventDefault();
       const nome = $('#n-nome').value.trim(), valor = toCents($('#n-valor').value), data = $('#n-data').value || today();
@@ -997,7 +1038,7 @@ function wireChart(){
 }
 
 /* ---------- offline + atualização ---------- */
-const APP_VERSION = '2';
+const APP_VERSION = '3';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
