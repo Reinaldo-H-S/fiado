@@ -498,7 +498,7 @@ body{background:
 .cc:active{transform:scale(.985)}
 
 /* toast */
-.toast{border-radius:999px;padding:11px 20px;box-shadow:0 14px 34px -10px rgba(0,0,0,.4)}
+.toast{border-radius:20px;padding:11px 20px;box-shadow:0 14px 34px -10px rgba(0,0,0,.4);white-space:normal;overflow:visible;text-overflow:clip;width:max-content;max-width:min(440px,calc(100vw - 32px));box-sizing:border-box;text-align:center;line-height:1.3;overflow-wrap:anywhere}
 @media (prefers-reduced-motion:no-preference){.toast{animation:toastIn .4s var(--ease)}}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,-14px) scale(.96)}}
 
@@ -1547,7 +1547,7 @@ let tT;
 function toast(msg, bad){
   let t = $('#toast'); if(!t){ t = document.createElement('div'); t.id='toast'; t.setAttribute('role','status'); document.body.appendChild(t); }
   t.className = 'toast'+(bad?' bad':''); t.textContent = msg; t.hidden=false;
-  clearTimeout(tT); tT = setTimeout(()=>t.hidden=true, 2600);
+  clearTimeout(tT); tT = setTimeout(()=>t.hidden=true, Math.min(6000, 2200 + String(msg).length*45));
 }
 
 /* =====================================================================
@@ -2597,7 +2597,7 @@ SHEETS.sync = {
   }
 };
 
-const APP_VERSION = '13';
+const APP_VERSION = '14';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
