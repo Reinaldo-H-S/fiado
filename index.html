@@ -638,6 +638,8 @@ body{-webkit-font-smoothing:auto;letter-spacing:normal}
 #ptr svg{width:20px;height:20px}
 
 /* ---------- v16: "Pago" per debt ---------- */
+.chipbtn.dia.late{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--late) 55%,transparent)}
+.chipbtn.dia.late:not([aria-pressed="true"]){color:var(--late)}
 .scrim.still,.scrim.still .sheet{animation:none!important}
 .pago-btn{border:0;border-radius:999px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:600;white-space:nowrap;cursor:pointer;
   background:color-mix(in srgb,#1BAF7A 16%,var(--surface));color:var(--ink);box-shadow:inset 0 0 0 1px color-mix(in srgb,#1BAF7A 45%,transparent);transition:transform .15s}
@@ -1285,12 +1287,26 @@ function pessoaHTML(s){
   ${ro?'':`<div class="field"><label for="p-tel">WhatsApp (com DDD, opcional)</label><input class="inp" id="p-tel" inputmode="tel" placeholder="11 98765-4321" value="${esc(p.telefone||'')}"></div>
   <button class="btn danger" id="p-del">${s.armed?'Toque de novo para apagar '+esc(p.nome)+' e todo o histórico':'Apagar pessoa'}</button>`}`;
 }
+// v17: one chip per due date ("15/11 · R$ 490"), so a payment can settle exactly that day
+function porDiaChips(sm, pg){
+  const g = {};
+  sm.abertas.forEach(a=>{ const k = a.prometido || ('d'+a.data); (g[k] = g[k] || []).push(a); });
+  const ks = Object.keys(g).sort((x,y)=>{ const ax = g[x][0], ay = g[y][0]; return (ax.prometido||'9999').localeCompare(ay.prometido||'9999') || ax.data.localeCompare(ay.data); });
+  if(ks.length<2) return '';  // a single date is the same as "tudo"
+  const t = today();
+  return `<div class="field" style="gap:8px"><label>${pg?'Ou pague uma data':'Ou dê baixa numa data'}</label><div class="chips">${ks.map(k=>{
+    const it = g[k], v = it.reduce((s,a)=>s+a.resta,0), a0 = it[0], late = a0.prometido && a0.prometido<t;
+    const rot = a0.prometido ? fmtShort(a0.prometido) : 'sem prazo · '+fmtShort(a0.data);
+    return `<button type="button" class="chipbtn dia${late?' late':''}" data-v="${v}" data-ids="${it.map(a=>esc(a.id)).join(',')}" aria-pressed="false">${rot} · ${brl(v)}</button>`;
+  }).join('')}</div></div>`;
+}
 function pagarHTML(s){
   const p = S.pessoas[s.pid], sm = summary(s.pid), pg = PAGAR();
   return `${head((pg?'Paguei ':'Recebi de ')+esc(p.nome))}
   <form id="f-pagar" class="field" style="gap:14px" novalidate>
     <div class="field"><label for="g-valor">${pg?'Quanto você pagou':'Quanto caiu'}</label><div class="money"><span>R$</span><input id="g-valor" inputmode="decimal" value="${brlShort(sm.saldo)}"></div></div>
     <div class="chips"><button type="button" class="chipbtn" data-v="${sm.saldo}" aria-pressed="true">tudo (${brl(sm.saldo)})</button>${sm.saldo>=2?`<button type="button" class="chipbtn" data-v="${Math.round(sm.saldo/2)}">metade</button>`:''}</div>
+    ${porDiaChips(sm, pg)}
     <div class="field"><label for="g-data">Quando</label><input class="inp" type="date" id="g-data" value="${today()}"></div>
     <div class="err" id="g-err"></div>
     <button class="btn ${pg?'pay':'lime'}" type="submit">Registrar pagamento</button>
@@ -1529,7 +1545,12 @@ function wire(s){
       e.preventDefault();
       const valor = toCents(v.value);
       if(!(valor>0)) return $('#g-err').textContent='Coloca quanto caiu, tipo 80 ou 45,50.';
-      await put('lanc', 'l-'+uid(), {pessoaId:s.pid, tipo:'pagamento', dir:ui.lado, valor, desc:'', data:$('#g-data').value||today(), criadoEm:Date.now()});
+      const quando = $('#g-data').value||today(), dia = document.querySelector('[data-ids][aria-pressed="true"]');
+      if(dia && valor===+dia.dataset.v){
+        // settle exactly the debts of that date, each one tied to its payment
+        const ab = summary(s.pid).abertas; let i = 0;
+        for(const id of dia.dataset.ids.split(',')){ const a = ab.find(x=>x.id===id); if(a) await put('lanc', 'l-'+uid(), {pessoaId:s.pid, tipo:'pagamento', dir:ui.lado, valor:a.resta, desc:'', data:quando, ref:id, criadoEm:Date.now()+(i++)}); }
+      } else await put('lanc', 'l-'+uid(), {pessoaId:s.pid, tipo:'pagamento', dir:ui.lado, valor, desc:'', data:quando, criadoEm:Date.now()});
       toast(PAGAR() ? 'pago − '+brl(valor) : 'pix recebido + '+brl(valor));
       $('#layer').dataset.key=''; openSheet({type:'pessoa', pid:s.pid});
     };
@@ -2666,7 +2687,7 @@ SHEETS.sync = {
   }
 };
 
-const APP_VERSION = '16';
+const APP_VERSION = '17';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
