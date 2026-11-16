@@ -637,6 +637,18 @@ body{-webkit-font-smoothing:auto;letter-spacing:normal}
 #ptr.pronto,#ptr.spin{background:var(--lime);color:var(--lime-ink)}
 #ptr svg{width:20px;height:20px}
 
+/* ---------- v16: "Pago" per debt ---------- */
+.scrim.still,.scrim.still .sheet{animation:none!important}
+.pago-btn{border:0;border-radius:999px;padding:7px 12px;font:inherit;font-size:12.5px;font-weight:600;white-space:nowrap;cursor:pointer;
+  background:color-mix(in srgb,#1BAF7A 16%,var(--surface));color:var(--ink);box-shadow:inset 0 0 0 1px color-mix(in srgb,#1BAF7A 45%,transparent);transition:transform .15s}
+.pago-btn:active{transform:scale(.94)}
+.pago-btn:disabled{opacity:.6}
+.ab-who{grid-template-columns:minmax(0,1fr) auto;padding-left:56px}
+details.day > .ab-who{padding-left:14px}
+.grp + .grp{border-top:1px solid var(--line)}
+.tl-item.ab-item{grid-template-columns:minmax(0,1fr) auto auto}
+.tl-item.ab-item .s .pill{font-size:11px;padding:1px 7px}
+
 /* columns: invisible on phones, two columns on wide screens */
 .cols,.side,.main{display:contents}
 .nav-brand,.nav-foot{display:none}
@@ -792,12 +804,19 @@ function summary(pid, lado){
   lado = lado || ui.lado;
   const items = Object.entries(S.lanc).filter(([,l])=>l.pessoaId===pid && ladoDe(l)===lado).map(([id,l])=>({id,...l}));
   const dividas = items.filter(l=>l.tipo==='divida').sort((a,b)=>a.data.localeCompare(b.data) || (a.criadoEm||0)-(b.criadoEm||0));
-  let pago = items.filter(l=>l.tipo==='pagamento').reduce((s,l)=>s+l.valor,0);
   const total = dividas.reduce((s,l)=>s+l.valor,0);
-  const saldo = Math.max(0, total - pago);
-  // FIFO: payments clear the oldest debts first
-  const abertas = [];
-  for(const d of dividas){ const use = Math.min(pago, d.valor); pago -= use; if(d.valor-use>0) abertas.push({...d, resta:d.valor-use}); }
+  // v16: a payment marked on a specific debt ("Pago") clears that debt; any other payment
+  // clears what is due first (earliest promised date, then oldest), so overdue debts go first
+  const resta = {}; dividas.forEach(d=>resta[d.id]=d.valor);
+  let livre = 0;
+  for(const pg of items.filter(l=>l.tipo==='pagamento')){
+    if(pg.ref && resta[pg.ref]!=null){ const use = Math.min(pg.valor, resta[pg.ref]); resta[pg.ref] -= use; livre += pg.valor-use; }
+    else livre += pg.valor;
+  }
+  const ordem = (a,b)=>(a.prometido||'9999-99-99').localeCompare(b.prometido||'9999-99-99') || a.data.localeCompare(b.data) || (a.criadoEm||0)-(b.criadoEm||0);
+  for(const d of dividas.slice().sort(ordem)){ const use = Math.min(livre, resta[d.id]); resta[d.id] -= use; livre -= use; }
+  const abertas = dividas.filter(d=>resta[d.id]>0).map(d=>({...d, resta:resta[d.id]}));
+  const saldo = abertas.reduce((s,a)=>s+a.resta,0);
   const oldest = abertas[0];
   const promessas = abertas.map(a=>a.prometido).filter(Boolean).sort();
   const prazo = promessas[0] || null;
@@ -813,6 +832,23 @@ function summary(pid, lado){
   const sextas = saldo>0 && oldest ? fridaysSince(oldest.data) : 0;
   const late = prazo && saldo>0 ? Math.max(0, daysBetween(prazo, today())) : 0;
   return { items, saldo, total, abertas, oldest, prazo, status, sextas, late };
+}
+
+/* ---------- v16: mark one debt as paid ---------- */
+async function marcarPago(debtId){
+  const d = S.lanc[debtId]; if(!d) return;
+  const a = summary(d.pessoaId, ladoDe(d)).abertas.find(x=>x.id===debtId); if(!a) return;
+  await put('lanc', 'l-'+uid(), {pessoaId:d.pessoaId, tipo:'pagamento', dir:ladoDe(d), valor:a.resta, desc:'', data:today(), ref:debtId, criadoEm:Date.now()});
+  try{ navigator.vibrate?.(12); }catch(_){}
+  toast(`${ladoDe(d)==='pagar'?'Pago':'Recebido'} ✓ ${brl(a.resta)}${a.desc?' · '+a.desc:''}`);
+}
+const pagoBtn = (a, pg) => S.readOnly ? '' : `<button type="button" class="pago-btn" data-pago="${esc(a.id)}" aria-label="Marcar ${brl(a.resta)} como pago">✓ ${pg?'Paguei':'Pago'}</button>`;
+function ligarPago(){
+  document.querySelectorAll('#layer [data-pago]').forEach(b=>b.onclick=async e=>{
+    e.stopPropagation(); e.preventDefault();
+    if(b.disabled) return; b.disabled = true; b.textContent = '✓ …';
+    await marcarPago(b.dataset.pago); rerenderSheet();
+  });
 }
 
 /* ---------- v11: living mascot — its mood follows the total ---------- */
@@ -1006,7 +1042,7 @@ function brandMark(){ const ic = (cfgNow().icone||'').trim(); return ic ? `<span
 
 /* ---------- render ---------- */
 const lsGet = (k, d) => { try{ return localStorage.getItem(k) || d; }catch(e){ return d; } };
-let ui = { sheet:null, update:false, tab:lsGet('fiado-tab','lista'), lado:lsGet('fiado-lado','receber'), aba:lsGet('fiado-aba','fiado'), anim:true };
+let ui = { resumoVista:lsGet('fiado-rv','pessoa'), sheet:null, update:false, tab:lsGet('fiado-tab','lista'), lado:lsGet('fiado-lado','receber'), aba:lsGet('fiado-aba','fiado'), anim:true };
 function trocarLado(l){ if(ui.lado===l) return; ui.lado = l; ui.anim = true; try{ localStorage.setItem('fiado-lado', l); }catch(e){} window.scrollTo(0,0); render(); }
 function headerHTML(){ return `<header class="top">
     <div class="brand">${brandMark()}<span>${esc(txt('app'))}</span></div>
@@ -1138,8 +1174,13 @@ function renderSheet(){
   else if(s.type==='resumo') html = resumoHTML();
   else if(SHEETS[s.type]) html = SHEETS[s.type].html(s);
   if(!html){ ui.sheet=null; layer.innerHTML=''; layer.dataset.key=''; render(); return; }
-  layer.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">${'<div class="grab"></div>'+html}</div></div>`;
-  layer.dataset.key = sheetKey(s);
+  // same sheet redrawn (data changed): no slide-in again, keep open sections and scroll
+  const old = layer.querySelector('.sheet'), mesmo = !!old && layer.dataset.shown===sheetKey(s);
+  const abertos = mesmo ? [...layer.querySelectorAll('details[data-k]')].filter(d=>d.open).map(d=>d.dataset.k) : [];
+  const rolagem = mesmo ? old.scrollTop : 0;
+  layer.innerHTML = `<div class="scrim${mesmo?' still':''}" id="scrim"><div class="sheet" role="dialog" aria-modal="true">${'<div class="grab"></div>'+html}</div></div>`;
+  layer.dataset.key = sheetKey(s); layer.dataset.shown = sheetKey(s);
+  if(mesmo){ abertos.forEach(k=>{ const d = [...layer.querySelectorAll('details[data-k]')].find(x=>x.dataset.k===k); if(d) d.open = true; }); layer.querySelector('.sheet').scrollTop = rolagem; }
   $('#scrim').onclick = e=>{ if(e.target.id==='scrim') closeSheet(); };
   layer.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheet);
   wire(s);
@@ -1229,9 +1270,15 @@ function pessoaHTML(s){
     <button class="btn ghost" id="a-pagar" ${sm.saldo>0?'':'disabled'}><b>✓</b>Recebi</button>
     <button class="btn ghost" id="a-mais"><b>+</b>Fiado</button>
   </div>`)}
+  ${sm.abertas.length ? `<div class="sec-h"><h2 style="font-size:18px">em aberto</h2><span class="count">${sm.abertas.length} ${sm.abertas.length===1?'conta':'contas'} · ${brl(sm.saldo)}</span></div>
+  <div class="tl">${sm.abertas.slice().sort((a,b)=>(a.prometido||'9999').localeCompare(b.prometido||'9999')||a.data.localeCompare(b.data)).map(a=>{ const q = a.prometido ? quandoTxt(a.prometido) : null; return `<div class="tl-item ab-item">
+      <div style="min-width:0"><div class="d">${esc(a.desc||(pg?'Conta':'Fiado'))}</div><div class="s">${fmtShort(a.data)}${a.prometido?` · <span class="pill ${q.cls}">${a.prometido<today()?q.t:(pg?'pagar ':'paga ')+fmtShort(a.prometido)}</span>`:' · sem prazo'}${a.resta<a.valor?` · falta ${brl(a.resta)} de ${brl(a.valor)}`:''}</div></div>
+      <div class="v num">${brl(a.resta)}</div>
+      ${ro?'<span></span>':pagoBtn(a, pg)}
+    </div>`; }).join('')}</div>` : ''}
   <div class="sec-h"><h2 style="font-size:18px">histórico</h2><span class="count">${items.length} ${items.length===1?'lançamento':'lançamentos'}</span></div>
   <div class="tl">${items.map(l=>`<div class="tl-item">
-      <div style="min-width:0"><div class="d">${l.tipo==='pagamento'?(pg?'Você pagou':'Pagou'):esc(l.desc||(pg?'Conta':'Fiado'))}</div><div class="s">${fmtDate(l.data)}${l.tipo==='divida'&&l.prometido?` · ${pg?'prometi':'jurou'} pra ${fmtShort(l.prometido)}`:''}</div></div>
+      <div style="min-width:0"><div class="d">${l.tipo==='pagamento'?(pg?'Você pagou':'Pagou')+(l.ref&&S.lanc[l.ref]?' · '+esc(S.lanc[l.ref].desc||(pg?'conta':'fiado'))+' de '+fmtShort(S.lanc[l.ref].prometido||S.lanc[l.ref].data):''):esc(l.desc||(pg?'Conta':'Fiado'))}</div><div class="s">${fmtDate(l.data)}${l.tipo==='divida'&&l.prometido?` · ${pg?'prometi':'jurou'} pra ${fmtShort(l.prometido)}`:''}</div></div>
       <div class="v num ${l.tipo==='pagamento'?'in':''}">${l.tipo==='pagamento'?'− ':''}${brl(l.valor)}</div>
       ${ro?'<span></span>':`<button class="del" data-del="${esc(l.id)}" aria-label="Apagar lançamento">apagar</button>`}
     </div>`).join('') || '<div class="tl-item"><span class="tiny">Nada lançado.</span></div>'}</div>
@@ -1445,6 +1492,7 @@ function wire(s){
     if(b('a-cobrar')) b('a-cobrar').onclick=()=>{ $('#layer').dataset.key=''; openSheet({type:'cobrar', pid:s.pid}); };
     if(b('a-pagar')) b('a-pagar').onclick=()=>{ $('#layer').dataset.key=''; openSheet({type:'pagar', pid:s.pid}); };
     if(b('a-mais')) b('a-mais').onclick=()=>{ $('#layer').dataset.key=''; openSheet({type:'novo', pid:s.pid}); };
+    ligarPago();
     document.querySelectorAll('[data-del]').forEach(x=>x.onclick=()=>{
       if(x.classList.contains('armed')) del('lanc', x.dataset.del);
       else { x.classList.add('armed'); x.textContent='confirmar'; setTimeout(()=>{ if(x.isConnected){ x.classList.remove('armed'); x.textContent='apagar'; } }, 3000); }
@@ -1499,6 +1547,8 @@ function wire(s){
   if(SHEETS[s.type]) SHEETS[s.type].wire(s);
   if(s.type==='resumo'){
     document.querySelectorAll('#layer [data-open]').forEach(b=>b.onclick=()=>{ $('#layer').dataset.key=''; openSheet({type:'pessoa', pid:b.dataset.open}); });
+    document.querySelectorAll('#layer [data-rv]').forEach(b=>b.onclick=()=>{ ui.resumoVista = b.dataset.rv; try{ localStorage.setItem('fiado-rv', ui.resumoVista); }catch(e){} rerenderSheet(); });
+    ligarPago();
   }
   if(s.type==='importar'){
     $('#imp-ok').onclick = ()=>{
@@ -2263,7 +2313,7 @@ function validarBackup(j){
   for(const [id,p] of Object.entries(j.pessoas)){ if(p && typeof p.nome==='string') pessoas[id] = {nome:p.nome.slice(0,80), telefone:String(p.telefone||'').slice(0,30), exemplo:!!p.exemplo, criadoEm:+p.criadoEm||0, ...(okFoto(p.foto) ? {foto:p.foto} : {})}; }
   for(const [id,l] of Object.entries(j.lanc)){
     if(!l || !pessoas[l.pessoaId] || !['divida','pagamento'].includes(l.tipo) || !(Number.isInteger(l.valor) && l.valor>0) || !/^\d{4}-\d{2}-\d{2}$/.test(l.data||'')) continue;
-    lanc[id] = {pessoaId:l.pessoaId, tipo:l.tipo, dir:l.dir==='pagar'?'pagar':'receber', valor:l.valor, desc:String(l.desc||'').slice(0,80), data:l.data, prometido:/^\d{4}-\d{2}-\d{2}$/.test(l.prometido||'')?l.prometido:null, criadoEm:+l.criadoEm||0};
+    lanc[id] = {pessoaId:l.pessoaId, tipo:l.tipo, dir:l.dir==='pagar'?'pagar':'receber', valor:l.valor, desc:String(l.desc||'').slice(0,80), data:l.data, prometido:/^\d{4}-\d{2}-\d{2}$/.test(l.prometido||'')?l.prometido:null, criadoEm:+l.criadoEm||0, ...(l.tipo==='pagamento' && typeof l.ref==='string' ? {ref:l.ref.slice(0,60)} : {})};
   }
   const config = j.config && typeof j.config==='object' ? j.config : {};
   const out = {pessoas, lanc, config, exportadoEm:j.exportadoEm};
@@ -2320,30 +2370,38 @@ function quandoTxt(d){
   return {t:`em ${dd} dias`, cls:'none'};
 }
 function resumoHTML(){
-  const ab = abertasTodas(), t = today();
+  const ab = abertasTodas(), t = today(), pg = PAGAR();
   const atrasado = ab.filter(a=>a.prometido && a.prometido<t).reduce((s,a)=>s+a.resta,0);
   const semana = ab.filter(a=>a.prometido && a.prometido>=t && daysBetween(t,a.prometido)<=6).reduce((s,a)=>s+a.resta,0);
   const semPrazo = ab.filter(a=>!a.prometido).reduce((s,a)=>s+a.resta,0);
+  const vista = ui.resumoVista==='dia' ? 'dia' : 'pessoa';
+  const saldoDe = {}; ab.forEach(a=>saldoDe[a.pid]=(saldoDe[a.pid]||0)+a.resta);
+  const nomeConta = a => esc(a.desc||(pg?'conta':'fiado'));
+  const itemDia = a => `<div class="who ab-who"><div style="min-width:0"><div class="n">${nomeConta(a)} · ${brl(a.resta)}</div><div class="s">desde ${fmtShort(a.data)}${a.resta<a.valor?` · falta ${brl(a.resta)} de ${brl(a.valor)}`:''}</div></div>${pagoBtn(a, pg)}</div>`;
   const dias = {};
   for(const a of ab){ const k = a.prometido || 'sem'; (dias[k] = dias[k] || []).push(a); }
   const chaves = Object.keys(dias).filter(k=>k!=='sem').sort();
   if(dias.sem) chaves.push('sem');
   const dayHTML = k => {
-    const itens = dias[k].sort((a,b)=>b.resta-a.resta), tot = itens.reduce((s,a)=>s+a.resta,0);
-    const pessoas = new Set(itens.map(a=>a.pid)).size;
+    const itens = dias[k], tot = itens.reduce((s,a)=>s+a.resta,0);
+    const grupos = {}; itens.forEach(a=>(grupos[a.pid] = grupos[a.pid] || []).push(a));
+    const gs = Object.values(grupos).map(g=>({p:g[0], itens:g, tot:g.reduce((s,a)=>s+a.resta,0)})).sort((x,y)=>y.tot-x.tot);
     const q = k==='sem' ? {t:'sem data combinada', cls:'none'} : quandoTxt(k);
-    return `<details class="day"><summary>
-      <div style="min-width:0"><div class="d">${k==='sem' ? 'Sem prazo' : fmtDate(k)}</div><div class="s"><span class="pill ${q.cls}">${q.t}</span> · ${pessoas} ${pessoas===1?'pessoa':'pessoas'}</div></div>
+    return `<details class="day" data-k="d:${k}"><summary>
+      <div style="min-width:0"><div class="d">${k==='sem' ? 'Sem prazo' : fmtDate(k)}</div><div class="s"><span class="pill ${q.cls}">${q.t}</span> · ${gs.length} ${gs.length===1?'pessoa':'pessoas'}</div></div>
       <div class="v num">${brl(tot)}</div><span class="chev" aria-hidden="true">›</span></summary>
-      ${itens.map(a=>`<button class="who" data-open="${esc(a.pid)}">${avatar(a.pessoa)}<div style="min-width:0"><div class="n">${esc(a.nome)}</div><div class="s">${esc(a.desc||'fiado')} · desde ${fmtShort(a.data)}</div></div><div class="v num">${brl(a.resta)}</div></button>`).join('')}
+      ${gs.map(g=>`<div class="grp"><button class="who" data-open="${esc(g.p.pid)}">${avatar(g.p.pessoa)}<div style="min-width:0"><div class="n">${esc(g.p.nome)}</div><div class="s">${saldoDe[g.p.pid]>g.tot?`no total ${pg?'você deve':'deve'} ${brl(saldoDe[g.p.pid])}`:'é tudo o que '+(pg?'você deve':'deve')}</div></div><div class="v num">${brl(g.tot)}</div></button>
+        ${g.itens.map(itemDia).join('')}</div>`).join('')}
     </details>`;
   };
   const ppl = Object.entries(S.pessoas).map(([id,p])=>({id,...p,s:summary(id)})).filter(p=>p.s.saldo>0).sort((a,b)=>b.s.saldo-a.s.saldo);
-  const personHTML = p => `<details class="day"><summary>
-      <div style="display:flex;gap:10px;align-items:center;min-width:0">${avatar(p)}<div style="min-width:0"><div class="d">${esc(p.nome)}</div><div class="s">${p.s.abertas.length} ${p.s.abertas.length===1?'lançamento aberto':'lançamentos abertos'}</div></div></div>
+  const itemPessoa = a => { const q = a.prometido ? quandoTxt(a.prometido) : null;
+    return `<div class="who ab-who"><div style="min-width:0"><div class="n">${nomeConta(a)} · ${brl(a.resta)}</div><div class="s">${a.prometido?`<span class="pill ${q.cls}">${a.prometido<t?q.t:(pg?'pagar ':'paga ')+fmtShort(a.prometido)}</span>`:'sem prazo'} · desde ${fmtShort(a.data)}</div></div>${pagoBtn(a, pg)}</div>`; };
+  const personHTML = p => `<details class="day" data-k="p:${esc(p.id)}"><summary>
+      <div style="display:flex;gap:10px;align-items:center;min-width:0">${avatar(p)}<div style="min-width:0"><div class="d">${esc(p.nome)}</div><div class="s">${p.s.abertas.length} ${p.s.abertas.length===1?'conta aberta':'contas abertas'}${p.s.status.cls==='late'?` · <span class="pill late">${p.s.status.txt}</span>`:''}</div></div></div>
       <div class="v num">${brl(p.s.saldo)}</div><span class="chev" aria-hidden="true">›</span></summary>
-      ${p.s.abertas.map(a=>`<div class="who" style="grid-template-columns:minmax(0,1fr) auto"><div style="min-width:0"><div class="n">${esc(a.desc||'fiado')}</div><div class="s">${fmtDate(a.data)}${a.prometido?' · jurou pra '+fmtShort(a.prometido):' · sem prazo'}</div></div><div class="v num">${brl(a.resta)}</div></div>`).join('')}
-      <button class="open-p" data-open="${esc(p.id)}">Abrir ${esc(p.nome)} pra cobrar ou dar baixa ›</button>
+      ${p.s.abertas.slice().sort((a,b)=>(a.prometido||'9999').localeCompare(b.prometido||'9999')||a.data.localeCompare(b.data)).map(a=>itemPessoa({...a, pid:p.id})).join('')}
+      <button class="open-p" data-open="${esc(p.id)}">Abrir ${esc(p.nome)} pra cobrar ou dar baixa em tudo ›</button>
     </details>`;
   const total = ab.reduce((s,a)=>s+a.resta,0);
   return `${head(esc(T('banner'))+' '+brl(total))}
@@ -2352,10 +2410,15 @@ function resumoHTML(){
     <div class="kpi"><div class="k">Próx. 7 dias</div><div class="v num">${brl(semana)}</div></div>
     <div class="kpi"><div class="k">Sem prazo</div><div class="v num">${brl(semPrazo)}</div></div>
   </div>
-  <div class="sec-h"><h2 style="font-size:18px">${PAGAR() ? 'a pagar por dia' : 'a receber por dia'}</h2><span class="count">toque no dia pra ver quem</span></div>
-  <div class="box">${chaves.map(dayHTML).join('') || '<p class="tiny" style="padding:14px;margin:0">Nada em aberto.</p>'}</div>
-  <div class="sec-h"><h2 style="font-size:18px">por pessoa</h2><span class="count">${ppl.length} ${ppl.length===1?'pessoa':'pessoas'}</span></div>
-  <div class="box">${ppl.map(personHTML).join('')}</div>`;
+  <div class="tabs" role="tablist" aria-label="Ver resumo">
+    <button role="tab" data-rv="pessoa" aria-selected="${vista==='pessoa'}">Por pessoa</button>
+    <button role="tab" data-rv="dia" aria-selected="${vista==='dia'}">Por dia</button>
+  </div>
+  ${vista==='pessoa'
+    ? `<div class="sec-h"><h2 style="font-size:18px">total de cada um</h2><span class="count">toque pra ver as contas</span></div>
+       <div class="box">${ppl.map(personHTML).join('') || '<p class="tiny" style="padding:14px;margin:0">Nada em aberto.</p>'}</div>`
+    : `<div class="sec-h"><h2 style="font-size:18px">${pg ? 'a pagar por dia' : 'a receber por dia'}</h2><span class="count">toque no dia pra ver quem</span></div>
+       <div class="box">${chaves.map(dayHTML).join('') || '<p class="tiny" style="padding:14px;margin:0">Nada em aberto.</p>'}</div>`}`;
 }
 
 /* ---------- gráfico de pizza ---------- */
@@ -2603,7 +2666,7 @@ SHEETS.sync = {
   }
 };
 
-const APP_VERSION = '15';
+const APP_VERSION = '16';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
