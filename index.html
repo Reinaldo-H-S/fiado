@@ -638,6 +638,9 @@ body{-webkit-font-smoothing:auto;letter-spacing:normal}
 #ptr svg{width:20px;height:20px}
 
 /* ---------- v19: installments ---------- */
+.edit-btn{white-space:nowrap;display:inline-flex;align-items:center;gap:4px;margin-top:6px;border:0;border-radius:999px;padding:5px 11px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;
+  background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.edit-btn:active{transform:scale(.95)}
 .parc{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--surface-2);color:var(--muted);vertical-align:1px;margin-left:2px}
 .link-mini{border:0;background:none;padding:0;font:inherit;font-size:12px;color:var(--ink);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .parc-tg{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;font-size:14px}
@@ -1315,14 +1318,14 @@ function pessoaHTML(s){
   </div>`)}
   ${sm.abertas.length ? `<div class="sec-h"><h2 style="font-size:18px">em aberto</h2><span class="count">${sm.abertas.length} ${sm.abertas.length===1?'conta':'contas'} · ${brl(sm.saldo)}</span></div>
   <div class="tl">${porDiaDe(sm.abertas).map(([k,its])=>`${its.length>1 && !ro ? `<div class="grp-pay"><span>${k==='sem'?'sem prazo':fmtShort(k)} · ${its.length} contas</span>${pagoDiaBtn(its, pg)}</div>` : ''}`+its.map(a=>{ const q = a.prometido ? quandoTxt(a.prometido) : null; return `<div class="tl-item ab-item">
-      <div style="min-width:0"><div class="d">${descDe(a, pg)}</div><div class="s">${fmtShort(a.data)}${a.prometido?` · <span class="pill ${q.cls}">${a.prometido<today()?q.t:(pg?'pagar ':'paga ')+fmtShort(a.prometido)}</span>`:' · sem prazo'}${a.resta<a.valor?` · falta ${brl(a.resta)} de ${brl(a.valor)}`:''}${ro?'':` · <button type="button" class="link-mini" data-parc="${esc(a.id)}">${a.parc?'editar parcelas':'parcelar'}</button>`}</div></div>
+      <div style="min-width:0"><div class="d">${descDe(a, pg)}</div><div class="s">${fmtShort(a.data)}${a.prometido?` · <span class="pill ${q.cls}">${a.prometido<today()?q.t:(pg?'pagar ':'paga ')+fmtShort(a.prometido)}</span>`:' · sem prazo'}${a.resta<a.valor?` · falta ${brl(a.resta)} de ${brl(a.valor)}`:''}</div>${ro?'':`<button type="button" class="edit-btn" data-parc="${esc(a.id)}">✎ Editar</button>`}</div>
       <div class="v num">${brl(a.resta)}</div>
       ${ro?'<span></span>':pagoBtn(a, pg)}
     </div>`; }).join('')).join('')}</div>` : ''}
   ${sm.futuras.length ? `<div class="sec-h"><h2 style="font-size:18px">próximas parcelas</h2><span class="count">${brl(sm.futuro)} · fora do total</span></div>
   <p class="tiny" style="margin:-4px 0 0">Entram no total quando faltar 30 dias ou menos pra vencer.</p>
   <div class="tl">${sm.futuras.map((a,i)=>`<div class="tl-item ab-item">
-      <div style="min-width:0"><div class="d">${descDe(a, pg)}</div><div class="s">${fmtMes(a.prometido)} · vence ${fmtShort(a.prometido)}${ro || sm.futuras.findIndex(b=>b.parc.g===a.parc.g)!==i ?'':` · <button type="button" class="link-mini" data-parc="${esc(a.id)}">editar parcelas</button>`}</div></div>
+      <div style="min-width:0"><div class="d">${descDe(a, pg)}</div><div class="s">${fmtMes(a.prometido)} · vence ${fmtShort(a.prometido)}</div>${ro || sm.futuras.findIndex(b=>b.parc.g===a.parc.g)!==i ?'':`<button type="button" class="edit-btn" data-parc="${esc(a.id)}">✎ Editar</button>`}</div>
       <div class="v num">${brl(a.resta)}</div>
       ${ro?'<span></span>':pagoBtn(a, pg).replace('✓ Pago','✓ Adiantou').replace('✓ Paguei','✓ Adiantei')}
     </div>`).join('')}</div>` : ''}
@@ -2737,64 +2740,81 @@ function proximosMesesHTML(ppl, pg){
   </section>`;
 }
 SHEETS.parcelar = {
+  // v20: "Editar" a debt. The value you type is what each installment is worth:
+  // a R$ 50 debt set to 5 parcelas becomes 5 × R$ 50 (it is never divided here)
   html(s){
-    const d0 = S.lanc[s.id]; if(!d0 || !S.pessoas[d0.pessoaId]) return ''; const d = {id:s.id, ...d0};
-    const pg = ladoDe(d)==='pagar', sm = summary(d.pessoaId, ladoDe(d)), todas = [...sm.abertas, ...sm.futuras];
+    const d0 = S.lanc[s.id]; if(!d0 || !S.pessoas[d0.pessoaId]) return '';
+    const d = {id:s.id, ...d0}, pg = ladoDe(d)==='pagar', sm = summary(d.pessoaId, ladoDe(d)), todas = [...sm.abertas, ...sm.futuras];
     const grupo = d.parc ? Object.entries(S.lanc).filter(([,l])=>l.parc && l.parc.g===d.parc.g).map(([id,l])=>({id,...l})) : [];
     const abertasG = grupo.filter(l=>todas.some(a=>a.id===l.id && a.resta===l.valor)).sort((a,b)=>a.parc.n-b.parc.n);
-    const prim = d.parc ? (abertasG[0] || {id:d.id, ...d}) : {id:d.id, ...d};
-    const resta = (todas.find(a=>a.id===s.id) || {resta:d.valor}).resta;
-    const de = d.parc ? d.parc.de : 3, x = d.parc ? prim.parc.n : 1;
-    const cada = d.parc ? prim.valor : Math.round(resta/de);
-    const venc = (d.parc ? prim.prometido : d.prometido) || addMonths(today(),1);
-    s.ctx = {d, grupo, abertasG, resta};
-    return `${head(d.parc ? 'Editar parcelas' : 'Parcelar')}
-    <p class="tiny" style="margin:0">${esc(S.pessoas[d.pessoaId].nome)} · ${esc(d.desc||(pg?'conta':'fiado'))}${d.parc?'':` · ${brl(resta)} em aberto`}</p>
+    const prim = d.parc ? (abertasG[0] || d) : d;
+    const de = d.parc ? d.parc.de : 1, x = d.parc ? prim.parc.n : 1;
+    const venc = prim.prometido || '';
+    s.ctx = {d, grupo, abertasG};
+    return `${head('Editar '+(pg?'conta':'fiado'))}
+    <p class="tiny" style="margin:0">${esc(S.pessoas[d.pessoaId].nome)}${d.parc?` · parcelado em ${d.parc.de}×`:''}</p>
     <form id="f-parc" class="field" style="gap:14px" novalidate>
+      <div class="field"><label for="pc-desc">Do quê</label><input class="inp" id="pc-desc" maxlength="80" value="${esc(d.desc||'')}" placeholder="${pg?'conta':'fiado'}"></div>
+      <div class="field"><label for="pc-v" id="pc-vl">Valor</label><div class="money"><span>R$</span><input id="pc-v" inputmode="decimal" value="${brlShort(prim.valor)}"></div></div>
       <div class="grid2">
-        <div class="field"><label for="pc-x">Parcela atual</label><input class="inp" id="pc-x" inputmode="numeric" value="${x}"></div>
-        <div class="field"><label for="pc-de">De quantas</label><input class="inp" id="pc-de" inputmode="numeric" value="${de}"></div>
+        <div class="field"><label for="pc-de">Parcelas</label><input class="inp" id="pc-de" inputmode="numeric" value="${de}"></div>
+        <div class="field" id="pc-xf"${de>1?'':' hidden'}><label for="pc-x">Começa na parcela</label><input class="inp" id="pc-x" inputmode="numeric" value="${x}"></div>
       </div>
-      <div class="field"><label for="pc-v">Valor de cada parcela</label><div class="money"><span>R$</span><input id="pc-v" inputmode="decimal" value="${brlShort(cada)}"></div></div>
-      <div class="field"><label for="pc-venc">A parcela atual vence em</label><input class="inp" type="date" id="pc-venc" value="${venc}"></div>
+      <div class="chips" role="group" aria-label="Quantidade de parcelas">${[1,2,3,4,5,6,10,12].map(n=>`<button type="button" class="chipbtn" data-qtd="${n}" aria-pressed="${n===de}">${n===1?'à vista':n+'×'}</button>`).join('')}</div>
+      <div class="field"><label for="pc-venc" id="pc-vencl">${pg?'Vou pagar em':'Jurou pagar em'}</label><input class="inp" type="date" id="pc-venc" value="${venc}"></div>
       <div class="hint" id="pc-prev"></div>
-      <p class="tiny" style="margin:0">As parcelas antes da atual contam como já pagas. Parcela que vence daqui a mais de 30 dias fica em “próximos meses” e só entra no total quando chegar a hora.</p>
       <div class="err" id="pc-err"></div>
-      <button class="btn ${pg?'pay':'lime'}" type="submit">${d.parc ? 'Salvar parcelas' : 'Parcelar'}</button>
+      <button class="btn ${pg?'pay':'lime'}" type="submit">Salvar</button>
     </form>`;
   },
   wire(s){
     const {d, grupo, abertasG} = s.ctx || {}; if(!d) return;
-    let mexeuValor = false;
+    const pg = ladoDe(d)==='pagar';
     const xI = $('#pc-x'), deI = $('#pc-de'), vI = $('#pc-v'), vencI = $('#pc-venc');
-    const ler = () => { const de = parseInt(deI.value)||0, x = parseInt(xI.value)||0; return {de, x, v:toCents(vI.value), venc:vencI.value}; };
+    const ler = () => ({de:parseInt(deI.value)||0, x:parseInt(xI.value)||1, v:toCents(vI.value), venc:vencI.value});
     const prev = () => {
-      const {de, x, v, venc} = ler(), h = $('#pc-prev');
-      if(!(de>=1 && x>=1 && x<=de && v>0 && venc)){ h.textContent = 'Confira os números: a parcela atual vai de 1 até o total de parcelas.'; return; }
-      const q = de-x+1;
-      h.textContent = `${q} ${q===1?'parcela':'parcelas'} de ${brl(v)} (${x}/${de} a ${de}/${de}) · ${fmtShort(venc)} até ${fmtShort(addMonths(venc, q-1))} · total ${brl(v*q)}`;
+      const {de, x, v, venc} = ler(), h = $('#pc-prev'), varias = de>1;
+      $('#pc-xf').hidden = !varias;
+      $('#pc-vl').textContent = varias ? 'Valor de cada parcela' : 'Valor';
+      $('#pc-vencl').textContent = varias ? 'A parcela '+(x||1)+' vence em' : (pg?'Vou pagar em':'Jurou pagar em');
+      document.querySelectorAll('[data-qtd]').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.qtd===de));
+      if(!varias || !(v>0)){ h.hidden = true; return; }
+      h.hidden = false;
+      if(!(x>=1 && x<=de)){ h.textContent = 'A parcela inicial tem que ser entre 1 e '+de+'.'; return; }
+      const q = de-x+1, ini = venc || addMonths(today(),1);
+      h.textContent = `${q} ${q===1?'parcela':'parcelas'} de ${brl(v)} (${x}/${de} a ${de}/${de}), de ${fmtShort(ini)} a ${fmtShort(addMonths(ini, q-1))} · total ${brl(v*q)}`;
     };
-    vI.oninput = ()=>{ mexeuValor = true; prev(); };
-    [xI, deI].forEach(i=>i.oninput = ()=>{ if(!d.parc && !mexeuValor){ const {de, x} = ler(); if(de>=x && x>=1) vI.value = brlShort(Math.round(s.ctx.resta/(de-x+1))); } prev(); });
+    [xI, deI, vI].forEach(i=>i.oninput = prev);
     vencI.oninput = prev; vencI.onchange = prev;
+    document.querySelectorAll('[data-qtd]').forEach(b=>b.onclick=()=>{ deI.value = b.dataset.qtd; if((parseInt(xI.value)||1) > +b.dataset.qtd) xI.value = 1; prev(); });
     prev();
     $('#f-parc').onsubmit = async e=>{
       e.preventDefault();
-      const {de, x, v, venc} = ler();
-      if(!(de>=1 && x>=1 && x<=de)) return $('#pc-err').textContent = 'A parcela atual tem que ser entre 1 e o total de parcelas.';
-      if(!(v>0)) return $('#pc-err').textContent = 'Coloca o valor de cada parcela.';
-      if(!venc) return $('#pc-err').textContent = 'Escolhe a data de vencimento.';
-      let pular = [], g;
-      if(d.parc){
-        // keep installments that already got any payment; redo the untouched ones
-        g = d.parc.g;
-        const intocadas = new Set(abertasG.map(l=>l.id));
-        pular = grupo.filter(l=>!intocadas.has(l.id)).map(l=>l.parc.n);
-        for(const l of abertasG) await del('lanc', l.id);
-      } else await del('lanc', d.id);
-      await criarParcelas({pessoaId:d.pessoaId, dir:ladoDe(d), desc:d.desc||'', data:d.data, de, x, venc, total:null, cada:v, criadoEm:Date.now(), pular, g});
-      if(d.parc) for(const l of grupo) if(S.lanc[l.id] && S.lanc[l.id].parc.de!==de) await put('lanc', l.id, {...S.lanc[l.id], parc:{...S.lanc[l.id].parc, de}});
-      toast(`Parcelado: ${de-x+1} × ${brl(v)}`);
+      const {de, x, v, venc} = ler(), desc = $('#pc-desc').value.trim(), err = $('#pc-err');
+      if(!(de>=1)) return err.textContent = 'Coloca quantas parcelas (1 = à vista).';
+      if(de>1 && !(x>=1 && x<=de)) return err.textContent = 'A parcela inicial tem que ser entre 1 e '+de+'.';
+      if(!(v>0)) return err.textContent = 'Coloca o valor.';
+      if(de>1 && !venc) return err.textContent = 'Escolhe a data da primeira parcela.';
+      if(de===1 && !d.parc){
+        // simple edit: same record, so payments already made on it stay linked
+        await put('lanc', d.id, {...S.lanc[d.id], desc, valor:v, prometido:venc||null});
+        toast('Salvo');
+      } else {
+        let pular = [], g;
+        if(d.parc){
+          g = d.parc.g;
+          const intocadas = new Set(abertasG.map(l=>l.id));
+          pular = grupo.filter(l=>!intocadas.has(l.id)).map(l=>l.parc.n);
+          for(const l of abertasG) await del('lanc', l.id);
+        } else await del('lanc', d.id);
+        if(de===1){
+          await put('lanc', 'l-'+uid(), {pessoaId:d.pessoaId, tipo:'divida', dir:ladoDe(d), valor:v, desc, data:d.data, prometido:venc||null, criadoEm:Date.now()});
+        } else {
+          await criarParcelas({pessoaId:d.pessoaId, dir:ladoDe(d), desc, data:d.data, de, x, venc, total:null, cada:v, criadoEm:Date.now(), pular, g});
+          if(d.parc) for(const l of grupo) if(S.lanc[l.id]) await put('lanc', l.id, {...S.lanc[l.id], desc, parc:{...S.lanc[l.id].parc, de}});
+        }
+        toast(de>1 ? `${de-x+1} parcelas de ${brl(v)}` : 'Salvo');
+      }
       $('#layer').dataset.key=''; openSheet({type:'pessoa', pid:d.pessoaId});
     };
   }
@@ -2847,7 +2867,7 @@ SHEETS.sync = {
   }
 };
 
-const APP_VERSION = '19';
+const APP_VERSION = '20';
 let swReg = null, recarregando = false;
 function mostrarUpdate(){ if(!ui.update){ ui.update = true; render(); } }
 function aplicarUpdate(){
